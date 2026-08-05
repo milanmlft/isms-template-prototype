@@ -1,0 +1,6 @@
+project:
+  title: "Information Security Management System"
+  type: isms
+format:
+  isms-html:
+    toc: true
