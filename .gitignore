@@ -1,0 +1,6 @@
+# Rendered output and Quarto's caches.
+_site/
+.quarto/
+_freeze/
+**/*.quarto_ipynb
+
