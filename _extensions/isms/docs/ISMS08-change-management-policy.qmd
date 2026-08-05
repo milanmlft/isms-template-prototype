@@ -1,6 +1,6 @@
 ---
 isms-id: ISMS08
-title: "Change Management Policy"
+title: "ISMS08 - Change Management Policy"
 baseline-doc-version: "1.0"
 number-sections: true
 provenance: >

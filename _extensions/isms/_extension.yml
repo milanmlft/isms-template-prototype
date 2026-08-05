@@ -25,3 +25,7 @@ contributes:
     html:
       theme: cosmo
       toc: true
+  metadata:
+    project:
+      pre-render:
+        - cli/isms.ts

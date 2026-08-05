@@ -1,6 +1,6 @@
 ---
 isms-id: ISMS03
-title: "Access Control Policy"
+title: "ISMS03 - Access Control Policy"
 baseline-doc-version: "1.0"
 number-sections: true
 provenance: >

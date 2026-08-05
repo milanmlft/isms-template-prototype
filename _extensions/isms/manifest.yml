@@ -1,0 +1,35 @@
+# The baseline document registry. Authoritative on which documents exist, their canonical
+# IDs and their suggested order. `blocks:` is the published block-ID surface: those IDs are
+# a public API, because downstream overrides target them by name. Removing or renaming one
+# is a MAJOR release.
+baseline_version: 0.1.0
+
+documents:
+  - id: ISMS03
+    file: docs/ISMS03-access-control-policy.qmd
+    title: Access Control Policy
+    blocks:
+      - overview
+      - scope
+      - conventions
+      - principles
+      - user-access
+      - user-access.approval-chain
+      - user-access.review-cadence
+      - authentication
+      - privileged-access
+      - physical-access
+      - network-access
+      - os-access
+      - information-system-access
+      - monitoring
+
+  - id: ISMS08
+    file: docs/ISMS08-change-management-policy.qmd
+    title: Change Management Policy
+    blocks:
+      - overview
+      - scope
+      - classification
+      - assessment
+      - review
