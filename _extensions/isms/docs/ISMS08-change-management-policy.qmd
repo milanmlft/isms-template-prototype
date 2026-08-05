@@ -1,0 +1,70 @@
+---
+isms-id: ISMS08
+title: "Change Management Policy"
+baseline-doc-version: "1.0"
+number-sections: true
+provenance: >
+  PROTOTYPE PLACEHOLDER TEXT. Written to exercise multi-document composition; not derived
+  from any institution's approved policy and not fit for adoption as-is.
+---
+
+<!-- isms:begin id=overview -->
+
+## Document Overview {#sec-overview}
+
+This Change Management Policy establishes how changes to {{< var environment_name >}}s
+within the scope of {{< var organisation >}}'s {{< var isms_name >}} are proposed, assessed,
+approved and recorded, so that changes do not undermine the confidentiality, integrity or
+availability of the information those environments hold.
+
+<!-- isms:end id=overview -->
+
+<!-- isms:begin id=scope -->
+
+## Document Scope {#sec-scope}
+
+This policy applies to all changes affecting the infrastructure, applications, services and
+documented information that support the {{< var environment_abbr >}}s, including changes to
+this {{< var isms_name >}} itself.
+
+<!-- isms:end id=scope -->
+
+<!-- isms:begin id=classification hint="Define your own change categories if they differ from significant/minor." -->
+
+## Change Categories {#sec-classification}
+
+Changes shall be categorised before assessment:
+
+- **Significant change:** a change that alters the risk profile of an environment, affects
+  the scope of the {{< var isms_name >}}, or changes a mandatory requirement in a controlled
+  document. Significant changes shall be approved by the
+  {{< var roles.governance_body >}}.
+- **Minor change:** any other change. Minor changes may be approved by the
+  {{< var roles.ig_lead >}} or a delegate.
+
+<!-- isms:end id=classification -->
+
+<!-- isms:begin id=assessment -->
+
+## Assessment and Approval {#sec-assessment}
+
+- Every change shall have an identified requester and an identified approver, and the two
+  shall not be the same person.
+- Every significant change shall be risk assessed before approval, and the assessment shall
+  be recorded.
+- Changes shall be recorded such that the change, its rationale, its approver and its date
+  of approval can be reconstructed after the fact.
+- Emergency changes may be implemented before approval where a delay would increase risk,
+  but shall be recorded and retrospectively approved at the next meeting of the
+  {{< var roles.governance_body >}}.
+
+<!-- isms:end id=assessment -->
+
+<!-- isms:begin id=review -->
+
+## Review of Controlled Documents {#sec-review}
+
+Controlled documents shall be reviewed at least once every review period stated in their
+document control table. A review shall be recorded even where it results in no change.
+
+<!-- isms:end id=review -->

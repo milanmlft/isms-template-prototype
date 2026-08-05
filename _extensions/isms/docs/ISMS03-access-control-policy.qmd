@@ -1,0 +1,187 @@
+---
+isms-id: ISMS03
+title: "Access Control Policy"
+baseline-doc-version: "1.0"
+number-sections: true
+provenance: >
+  PROTOTYPE PLACEHOLDER TEXT. Written to exercise multi-document composition; not derived
+  from any institution's approved policy and not fit for adoption as-is.
+---
+
+<!-- isms:begin id=overview -->
+
+## Document Overview {#sec-overview}
+
+This Access Control Policy establishes the requirements to ensure the protection of
+{{< var environment_name >}}s within the scope of {{< var organisation >}}'s
+{{< var isms_name >}} by managing access rights. This policy supports compliance with
+relevant standards (e.g. ISO/IEC 27001), ensuring that access to information is based on
+business needs and aligned with security requirements.
+
+This document covers:
+
+- [Access Control Principles](#sec-principles)
+- [User Access Management](#sec-user-access)
+- [Authentication Principles](#sec-authentication)
+- [Privileged Access Management](#sec-privileged-access)
+- [Physical Access](#sec-physical-access)
+- [Network Access](#sec-network-access)
+- [Operating System Access](#sec-os-access)
+- [Information System Access](#sec-information-system-access)
+- [Monitoring and Logging](#sec-monitoring)
+
+<!-- isms:end id=overview -->
+
+<!-- isms:begin id=scope hint="Name the environments, applications and services in scope, and the categories of person to whom this policy applies." -->
+
+## Document Scope {#sec-scope}
+
+This policy applies to all employees, contractors, consultants, temporary staff, service
+accounts, and any other individuals with access to {{< var environment_name >}}s.
+The scope includes the infrastructure, applications and services that support each
+{{< var environment_name >}}, referred to in this document as "information systems".
+
+<!-- isms:end id=scope -->
+
+<!-- isms:begin id=conventions -->
+
+## Conventions used in this Document {#sec-conventions}
+
+| Term | Definition |
+|------|------------|
+| Shall | A mandatory requirement of this policy |
+| Should | A recommended requirement of this policy |
+| May | An optional requirement of this policy |
+
+<!-- isms:end id=conventions -->
+
+<!-- isms:begin id=principles -->
+
+## Access Control Principles {#sec-principles}
+
+Access to information systems shall be managed according to the following principles:
+
+- **Need to Know:** Access shall be granted based on the specific tasks a user must perform
+  or a system account is designated for.
+- **Least Privilege:** Accounts shall be granted the minimum permissions necessary to
+  perform their roles.
+- **Role-Based Access Control (RBAC):** Access rights shall be assigned according to defined
+  roles within the organisation.
+- **Segregation of Duties:** No individual shall have control over all aspects of any
+  critical system or process.
+
+<!-- isms:end id=principles -->
+
+<!-- isms:begin id=user-access -->
+
+## User Access Management {#sec-user-access}
+
+All user access shall be managed by an appropriate role as described in the
+{{< var organisation >}} roles and responsibilities framework.
+
+- **User registration, de-registration, and access authorisation:** Formal procedures for
+  adding, changing, or removing user access shall be implemented.
+
+<!-- isms:begin id=user-access.approval-chain hint="Which roles approve new or changed access at your institution?" -->
+
+  - New users or changes to user access shall be approved by:
+    - The {{< var roles.asset_owner >}} (for a project or study)
+    - The {{< var roles.environment_owner >}} (for infrastructure and code management)
+    - The {{< var roles.service_owner >}} or their delegate (for IT service access)
+
+<!-- isms:end id=user-access.approval-chain -->
+
+- **Removal of access rights:** Access shall be removed promptly upon termination or role
+  change.
+
+<!-- isms:begin id=user-access.review-cadence hint="How often are access rights reviewed?" -->
+
+- **Review of access rights:** Reviews of user access rights shall be conducted at least
+  every {{< var review.access_review_period >}} to ensure appropriateness.
+
+<!-- isms:end id=user-access.review-cadence -->
+
+<!-- isms:end id=user-access -->
+
+<!-- isms:begin id=authentication -->
+
+## Authentication Principles {#sec-authentication}
+
+All users and systems shall comply with {{< var organisation >}}'s authentication standards
+and policies, including multi-factor authentication where required.
+
+<!-- isms:end id=authentication -->
+
+<!-- isms:begin id=privileged-access -->
+
+## Privileged Access Management {#sec-privileged-access}
+
+Administrative or privileged accounts shall be tightly controlled and limited to authorised
+personnel. Privileged accounts should be used only for administrative purposes. Privileged
+access management shall follow a formal process that grants only the minimum privileges
+necessary to perform the assigned role or task. A formal record of all allocated privileges
+shall be maintained.
+
+<!-- isms:end id=privileged-access -->
+
+<!-- isms:begin id=physical-access -->
+
+## Physical Access {#sec-physical-access}
+
+Physical access shall be granted only upon the authority of the facility owner or service
+manager. All physical information systems shall be protected in accordance with their value
+and classification per {{< var organisation >}}'s information management policies. Approved
+personnel shall be responsible for physical security measures to prevent unauthorised access
+to devices or data.
+
+<!-- isms:end id=physical-access -->
+
+<!-- isms:begin id=network-access -->
+
+## Network Access {#sec-network-access}
+
+- Diagnostic and configuration ports shall be enabled only for approved business reasons.
+- All unused ports shall be disabled or removed.
+- Changes to network configuration affecting {{< var environment_abbr >}} networks shall be
+  risk assessed and recorded.
+- Network segregation shall be implemented according to risk assessments to protect
+  sensitive information.
+
+<!-- isms:end id=network-access -->
+
+<!-- isms:begin id=os-access -->
+
+## Operating System Access {#sec-os-access}
+
+- Users shall authenticate as authorised users at log-on.
+- Passwords shall be managed in accordance with {{< var organisation >}} password policies.
+- Sessions shall automatically lock after periods of inactivity.
+- Default operating system accounts shall be disabled, deleted, or have default passwords
+  changed upon system deployment.
+
+<!-- isms:end id=os-access -->
+
+<!-- isms:begin id=information-system-access -->
+
+## Information System Access {#sec-information-system-access}
+
+- Accounts without adequate assurance shall be disabled until appropriate verification is
+  provided.
+- Removal of accounts shall include removal of associated access rights.
+- {{< var roles.environment_owner >}}s shall implement appropriate segregation of information
+  assets on networks, grouping information assets as appropriate to achieve the required
+  network segregation.
+
+<!-- isms:end id=information-system-access -->
+
+<!-- isms:begin id=monitoring -->
+
+## Monitoring and Logging {#sec-monitoring}
+
+Access to {{< var environment_name >}}s shall be logged and monitored for security
+incident investigation purposes. Logs should include a timestamp, the user's identity, and
+the reason for access. Periodic reviews shall detect unauthorised access attempts. Any
+anomalies or violations shall be assessed and reported as information security incidents in
+accordance with {{< var organisation >}} incident management procedures.
+
+<!-- isms:end id=monitoring -->

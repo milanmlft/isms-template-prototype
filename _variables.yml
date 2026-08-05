@@ -1,1 +1,12 @@
 organisation: "My Organisation"
+environment_abbr: TRE
+environment_name: Trusted Research Environment
+isms_name: Research Data Information Security Management System
+review:
+  access_review_period: 12 months
+roles:
+  asset_owner: Information Asset Owner
+  environment_owner: TRE Environment Owner
+  governance_body: Operational Management Group
+  ig_lead: Head of Research Data Governance
+  service_owner: Service Owner
