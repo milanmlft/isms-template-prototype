@@ -8,9 +8,13 @@ document: ISMS03
      reason="Student projects are time-limited and were not covered by the baseline scope statement."
      approved-by="Head of Research Data Governance" approved-date=2026-07-14 -->
 
+::: {.callout-warning}
+**EXAMPLE OVERRIDE TEXT, REPLACE ME**
+
 Supervised student projects hosted in the {{< var environment_abbr >}} are in scope only for
 the duration of the approved project period, after which their access is revoked under
 [User Access Management](#sec-user-access).
+:::
 
 <!-- isms:end id=scope -->
 
@@ -18,9 +22,12 @@ the duration of the approved project period, after which their access is revoked
      reason="Local governance requires two-person approval for all new access."
      approved-by="Operational Management Group" approved-date=2026-07-14 -->
 
+::: {.callout-warning}
+**EXAMPLE OVERRIDE TEXT, REPLACE ME**
   - New users or changes to user access shall be approved by **both**:
     - The {{< var roles.asset_owner >}} for the project or study, and
     - The {{< var roles.ig_lead >}}
   - Each approval shall be recorded in the access request register before access is granted.
+:::
 
 <!-- isms:end id=user-access.approval-chain -->
