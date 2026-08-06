@@ -1,5 +1,6 @@
 import { parse as parseYaml } from "stdlib/yaml";
-import { join, resolve } from "stdlib/path";
+import { join, resolve, basename, dirname } from "stdlib/path";
+import { walkSync } from "stdlib/fs";
 
 export interface DocumentSpec {
   id: string;
@@ -28,9 +29,26 @@ export interface Project {
   baseline: Baseline;
 }
 
+/** Find the baseline directory as the extension installation path may be different depending on installation mechanism */
+function findBaselineDir(root: string): string | null {
+  const extRoot = join(root, "_extensions")
+  for (const entry of walkSync(extRoot, {
+    includeDirs: false,
+    maxDepth: 5,
+    match: [/manifest\.yml$/],
+  })) {
+    if (basename(dirname(entry.path)) === "isms") {
+      return dirname(entry.path)
+    }
+  }
+  return null;
+}
+
 export function loadProject(root = Deno.cwd()): Project {
-  const baselineDir = join(root, "_extensions", "isms");
+  const baselineDir = findBaselineDir(root)
+  if (baselineDir == null) {
+    throw new Error(`ISMS baseline directory not found under '_extensions/' (looked for a manifest.yml)`)
+  }
   const manifest = parseYaml(Deno.readTextFileSync(join(baselineDir, "manifest.yml"))) as Manifest;
-  const baseline = { dir: baselineDir, manifest: manifest }
-  return { root: resolve(root), baseline: baseline };
+  return { root: resolve(root), baseline: { dir: baselineDir, manifest: manifest } };
 }
