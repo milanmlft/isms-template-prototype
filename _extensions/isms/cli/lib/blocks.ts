@@ -43,7 +43,7 @@ const ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$/;
 // Closed attribute sets. Names not yet enforced are still accepted so that a newer
 // baseline does not fail to parse under an older CLI.
 const ATTRS_BEGIN = new Set(["id", "hint", "locked", "required", "optional", "recommended", "control"]);
-const ATTRS_OVERRIDE = new Set(["id", "mode", "reason", "approved-by", "approved-date", "exception-ref"]);
+const ATTRS_OVERRIDE = new Set(["id", "mode", "reason", "approved-by", "approved-date"]);
 const ATTRS_END = new Set(["id"]);
 
 export const OVERRIDE_MODES = ["replace", "before", "after", "delete"] as const;

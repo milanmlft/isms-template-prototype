@@ -142,9 +142,9 @@ document: ISMS03
 
 ### Attributes
 
-`id` and `mode` drive the splice. `reason`, `approved-by`, `approved-date` and `exception-ref` are
-governance metadata: they record _why_ the institution deviates and who signed it off. They are
-parsed and validated today, and are the input to the planned deviations register.
+`id` and `mode` drive the splice. `reason`, `approved-by`, and `approved-date` are governance
+metadata: they record _why_ the institution deviates and who signed it off. They are parsed and
+validated today, and are the input to the planned deviations register.
 
 ### Provenance
 
