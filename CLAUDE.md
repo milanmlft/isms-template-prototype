@@ -29,8 +29,8 @@ Two layers live in one repo, and the distinction drives almost every decision:
 - **The baseline** (`_extensions/isms/`) — the shared, versioned artefact. Contains
   `manifest.yml`, the authored policy sources under `docs/`, and the composition CLI. This
   directory is what gets vendored into a downstream institution's project.
-- **The institution project** (repo root) — `_quarto.yml`, `_variables.yml`, `index.qmd`. In
-  this repo it doubles as the template's own demo/test project.
+- **The institution project** (repo root) — `_quarto.yml`, `_variables.yml`, `index.qmd`, and
+  `_overrides/`. In this repo it doubles as the template's own demo/test project.
 
 ### Composition pipeline
 
@@ -38,8 +38,9 @@ Two layers live in one repo, and the distinction drives almost every decision:
 runs automatically on every render:
 
 1. `lib/project.ts` — `loadProject()` reads `_extensions/isms/manifest.yml`.
-2. `lib/compose.ts` — for each manifest document, parse the baseline `.qmd`, apply overrides,
-   re-emit front matter + a `DO NOT EDIT BY HAND` banner + body.
+2. `lib/compose.ts` — for each manifest document, parse the baseline `.qmd`, load and validate
+   `_overrides/<ID>.qmd` if present, apply the overrides, re-emit front matter + a
+   `DO NOT EDIT BY HAND` banner + body.
 3. `cli/isms.ts` — writes results to `<root>/docs/<ID>-<slug>.qmd` (only when content changed),
    then **prunes** `docs/*.qmd` files not in the current result set, so un-adopting a document
    removes its output.
@@ -82,15 +83,39 @@ Rules the parser enforces, and the reasoning behind them:
 - **Text outside any block is emitted verbatim and is not overridable.** This is deliberate: to
   make something unchangeable, leave it unblocked.
 
-### Overrides (parsed, not yet wired up)
+### Overrides
 
-`parseOverrides()` handles institution override files — same grammar with `isms:override`,
-`mode=replace|before|after|delete`, plus `reason` / `approved-by` / `approved-date` governance
-attributes. `compose.ts` still has `// TODO: overrides` and passes an empty ops map, so no
-override file is read yet. `emit()` is complete: it wraps overridden content in a
-`::: {.isms-local}` fenced div for visual provenance, **except** when the content is indented — a
-fenced div cannot wrap a list item without breaking the surrounding list, so indented overrides
-are emitted untouched.
+An institution overrides baseline content by writing `_overrides/<ISMS-ID>.qmd` — one optional
+file per baseline document, keyed on the ID rather than the title so retitling a baseline
+document does not orphan its overrides. Absence is the normal case: no file means the document is
+adopted verbatim. The directory is underscore-prefixed so Quarto treats it as project material
+and never renders the override sources as pages of the site; **do not** add a `project.render`
+list to exclude it, as a negation-only render list breaks the sidebar's `auto:` glob.
+
+Each file uses the same block grammar with `isms:override`, `mode=replace|before|after|delete`,
+plus `reason` / `approved-by` / `approved-date` governance attributes, and an optional
+`document:` front-matter key that is cross-checked against the ID in the filename.
+`loadOverrides()` in `compose.ts` rejects two things outright, because both would otherwise be
+silent no-ops on content someone has formally approved:
+
+- an override targeting a block ID that does not exist in the baseline document (the error lists
+  the IDs that do);
+- an override nested inside a block that is itself replaced or deleted, whose content could never
+  reach the output.
+
+`emit()` emits overridden content verbatim and marks its provenance with the `isms:block` comment
+it already wraps every block in, which gains `source=override mode=<mode>`. There is deliberately
+**no visual styling** of local content. A `::: {.isms-local}` fenced div was tried and removed: it
+cannot be applied to indented content (fence at column 0 splits the surrounding list into three
+sibling structures; fence indented into a list continuation makes Pandoc emit the `:::` as literal
+text), and the indented blocks are precisely the ones worth marking. A marker that silently skips
+them is worse than none — a reader who learns to trust it reads unmarked local content as
+baseline. Restoring a visual chip means a Lua filter that consumes the marker comments post-parse
+and attaches a class to the following AST node, sidestepping markdown indentation entirely.
+
+Not yet built: overriding front matter, appending institution-only sections outside the baseline
+block set, and the deviations register (`deviations.qmd`, still commented out in
+`_extension.yml`) that would collect every `reason` / `approved-by` into one auditable table.
 
 `normalise()` + `contentHash()` exist for upstream-drift detection and are intentionally
 Pandoc-free and cheap: a Quarto or Pandoc upgrade must never trigger a false drift storm across

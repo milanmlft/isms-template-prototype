@@ -36,9 +36,15 @@ async function run(): Promise<number> {
 
   writeAll(root, result.files);
 
+  const overrides = result.docs.reduce((n, d) => n + d.overrides, 0);
   console.log(
-    `[isms] composed from baseline ${baselineVersion} · `
+    `[isms] composed ${green(String(result.docs.length))} documents from baseline ` +
+    `${cyan(baselineVersion)} · ${overrides} local override${overrides === 1 ? "" : "s"}`,
   );
+  for (const doc of result.docs) {
+    const local = doc.overrides > 0 ? ` (${doc.overrides} local)` : "";
+    console.log(dim(`         ${doc.path}${local}`));
+  }
 
   return 0;
 }

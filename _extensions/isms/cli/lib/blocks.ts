@@ -343,12 +343,6 @@ function trimBlankLines(s: string): string {
   return lines.join("\n");
 }
 
-function baseIndent(s: string): number {
-  const lines = s.split("\n").filter((l) => l.trim() !== "");
-  if (lines.length === 0) return 0;
-  return Math.min(...lines.map((l) => (l.match(/^ */) as RegExpMatchArray)[0].length));
-}
-
 /** True when `ancestor` is a strict dotted ancestor of `id`. */
 export function isAncestor(ancestor: string, id: string): boolean {
   return id.startsWith(ancestor + ".");
@@ -368,19 +362,17 @@ export function emit(node: Block, ops: Map<string, OverrideOp>, isRoot = false):
       .map((s) => (s.kind === "text" ? s.text ?? "" : emit(s.block!, ops)))
       .join("\n");
 
-  // Visual provenance is wrapped in a fenced div — but ONLY for block-level content.
+  // Overridden content is emitted verbatim. Provenance comes from the marker comments below,
+  // NOT from a visual wrapper.
   //
-  // A fenced div cannot wrap a list *item*: it would close the surrounding list, open a new
-  // one inside the div, and reopen a third afterwards. Quarto does not even parse it (the
-  // `:::` leaks into the output as literal text). Indented blocks are exactly the ones worth
-  // having — an approver list nested under a bullet is the canonical thing an institution
-  // must change — so for those the text is emitted untouched and provenance comes from the
-  // surrounding marker comment and the deviations register instead of a visual chip.
-  const local = (op: OverrideOp) => {
-    const text = trimBlankLines(op.text);
-    if (baseIndent(text) > 0) return text;
-    return `::: {.isms-local data-block="${node.id}" data-mode="${op.mode}"}\n${text}\n:::`;
-  };
+  // A `::: {.isms-local}` fenced div was tried and removed, because it cannot be applied to
+  // indented content: with the fence at column 0 the surrounding list splits into three
+  // sibling structures, and with the fence indented into a list continuation Pandoc stops
+  // parsing it and the `:::` leaks into the output as literal text. Indented blocks are
+  // exactly the ones worth marking — an approver list nested under a bullet is the canonical
+  // thing an institution must change — so a wrapper that skips them is worse than none: a
+  // reader who learns to trust the marker reads unmarked local content as baseline.
+  const local = (op: OverrideOp) => trimBlankLines(op.text);
 
   let body: string;
   if (!op) body = inner();

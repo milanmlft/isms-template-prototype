@@ -1,14 +1,29 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "stdlib/yaml";
 import { join } from "stdlib/path"
-import { Project } from "./project.ts"
-import { Block, emit, OverrideOp, ParsedDoc, parseDocument } from "./blocks.ts";
+import { DocumentSpec, Project } from "./project.ts"
+import {
+  emit,
+  isAncestor,
+  OverrideOp,
+  ParsedDoc,
+  ParseError,
+  parseDocument,
+  parseOverrides,
+} from "./blocks.ts";
 
 export const COMPOSED_DIR = "docs";
+/**
+ * Institution override sources. Underscore-prefixed so Quarto treats the directory as project
+ * material rather than as pages to render — the overrides are spliced into `docs/` instead.
+ */
+export const OVERRIDES_DIR = "_overrides";
 
 export interface ComposedDoc {
   ismsId: string;
   title: string;
   path: string;
+  /** How many baseline blocks this institution overrode. */
+  overrides: number;
 }
 
 export interface ComposeResult {
@@ -27,8 +42,7 @@ export async function compose(project: Project): Promise<ComposeResult> {
     const src = Deno.readTextFileSync(baselinePath);
     const parsed: ParsedDoc = parseDocument(baselinePath, src);
 
-    // TODO: overrides
-    let ops = new Map<string, OverrideOp>();
+    const ops = loadOverrides(root, spec, parsed);
 
     const baseMeta = (parseYaml(parsed.frontMatter || "{}") ?? {}) as Record<string, unknown>;
 
@@ -44,9 +58,59 @@ export async function compose(project: Project): Promise<ComposeResult> {
       ismsId: spec.id,
       title: baseMeta.title as string,
       path: relPath,
+      overrides: ops.size,
     })
   }
   return { files, docs };
+}
+
+/**
+ * Read the institution's override file for one baseline document, if it has one.
+ *
+ * Overrides live in `<root>/_overrides/<ISMS-ID>.qmd` — one file per document, keyed on the
+ * ID rather than the title, so retitling a baseline document does not orphan its overrides.
+ * Absence is the normal case: a document with no override file is adopted verbatim.
+ */
+function loadOverrides(root: string, spec: DocumentSpec, parsed: ParsedDoc): Map<string, OverrideOp> {
+  const path = join(root, OVERRIDES_DIR, `${spec.id}.qmd`);
+  let src: string;
+  try {
+    src = Deno.readTextFileSync(path);
+  } catch (err) {
+    if (err instanceof Deno.errors.NotFound) return new Map();
+    throw err;
+  }
+
+  const { document, ops } = parseOverrides(path, src);
+  if (document !== undefined && document !== spec.id) {
+    throw new ParseError(path, 1, `front matter says document: ${document}, but this file overrides ${spec.id}`);
+  }
+
+  for (const op of ops.values()) {
+    // A typo in a block ID would otherwise be a silent no-op, which is the worst possible
+    // outcome for something an approver has signed off on.
+    if (!parsed.blocks.has(op.id)) {
+      throw new ParseError(
+        path,
+        op.line,
+        `${spec.id} has no block "${op.id}". Overridable blocks: ${[...parsed.blocks.keys()].join(", ")}`,
+      );
+    }
+    // Replacing or deleting a block discards its children, so an override on a descendant
+    // of one would never reach the output. Fail loudly rather than drop it.
+    if (op.mode !== "replace" && op.mode !== "delete") continue;
+    for (const inner of ops.values()) {
+      if (isAncestor(op.id, inner.id)) {
+        throw new ParseError(
+          path,
+          inner.line,
+          `override "${inner.id}" sits inside "${op.id}", which is overridden with ` +
+          `mode=${op.mode} (line ${op.line}) and would discard it`,
+        );
+      }
+    }
+  }
+  return ops;
 }
 
 function slug(s: string): string {
