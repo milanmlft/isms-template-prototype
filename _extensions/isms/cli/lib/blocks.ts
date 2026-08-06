@@ -315,27 +315,6 @@ export function parseOverrides(file: string, src: string): { document?: string; 
   return { document: docMatch?.[1], ops };
 }
 
-/**
- * Light normalisation, deliberately cheap and deterministic: no external tools, no Pandoc,
- * so a Pandoc or Quarto upgrade can never trigger a false drift storm across every
- * institution at once. It absorbs whitespace churn only — a typo fix is a semantic change
- * and SHOULD demand review.
- */
-export function normalise(text: string): string {
-  return text
-    .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map((l) => l.replace(/[ \t]+$/, ""))
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-export async function contentHash(text: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalise(text)));
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 function trimBlankLines(s: string): string {
   const lines = s.replace(/\r\n/g, "\n").split("\n");
   while (lines.length && lines[0].trim() === "") lines.shift();
