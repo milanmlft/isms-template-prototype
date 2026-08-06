@@ -47,6 +47,24 @@ quarto preview                             # live-reloading dev server
 quarto run _extensions/isms/cli/isms.ts    # compose only, without rendering
 ```
 
+## Versioning
+
+Pin to a specific version by running
+
+```bash
+quarto add milanmlft/isms-template-prototype@v0.1.0
+```
+
+Update using `quarto update`
+
+```bash
+# Update to a specific version
+quarto update milanmlft/isms-template-prototype@v0.2.0
+
+# Update to latest version
+quarto update milanmlft/isms-template-prototype
+```
+
 ## The two layers
 
 Almost everything about this repo follows from one distinction:
