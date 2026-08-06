@@ -11,15 +11,15 @@ contributes:
         left:
           - href: index.qmd
             text: Home
-          # - href: deviations.qmd
-          #   text: Deviations
+          - href: deviations.qmd
+            text: Deviations
       sidebar:
         style: docked
         contents:
           - index.qmd
           - section: "Controlled documents"
             auto: "docs/*.qmd"
-          # - deviations.qmd
+          - deviations.qmd
     format: isms-html
   formats:
     html:
