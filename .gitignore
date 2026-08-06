@@ -1,3 +1,7 @@
+# Composed documents, written by the isms pre-render hook. Root-anchored: the baseline
+# sources in _extensions/isms/docs/ are tracked.
+/docs/
+
 # Rendered output and Quarto's caches.
 _site/
 .quarto/
