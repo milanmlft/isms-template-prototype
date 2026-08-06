@@ -90,11 +90,14 @@ on every render. For each document in `manifest.yml` the CLI:
 2. loads `_overrides/<ID>.qmd` if it exists, and validates every override against that tree;
 3. re-emits front matter, a `DO NOT EDIT BY HAND` banner, and the body with overrides spliced in,
    wrapping each block in a provenance comment;
-4. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** any `docs/*.qmd` not in the current
+4. records each override's governance metadata, and the section it landed in, for the register;
+5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** any `docs/*.qmd` not in the current
    result set — so removing a document from the manifest removes its output.
 
-`docs/` is therefore build output and is gitignored; the extension's sidebar picks it up via
-`auto: "docs/*.qmd"`. Edit the override file, never `docs/`.
+It then writes `deviations.qmd`, the register of everything the institution changed.
+
+`docs/` is therefore build output and is gitignored, as is `deviations.qmd`; the extension's
+sidebar picks the documents up via `auto: "docs/*.qmd"`. Edit the override file, never `docs/`.
 
 Composition is fail-loud. A typo in a block ID, an override that could never reach the output, an
 unknown attribute, an unclosed block — all abort the render with a `file:line: message`, rather than
@@ -161,8 +164,29 @@ document: ISMS03
 ### Attributes
 
 `id` and `mode` drive the splice. `reason`, `approved-by`, and `approved-date` are governance
-metadata: they record _why_ the institution deviates and who signed it off. They are parsed and
-validated today, and are the input to the planned deviations register.
+metadata: they record _why_ the institution deviates and who signed it off. They are the input to
+the [deviations register](#the-deviations-register).
+
+All three are optional and their values are not validated. An override missing one still composes
+— it may be mid-approval — but the CLI warns with a `file:line`, and the register prints
+`(not recorded)` rather than a dash, so a gap reads as a gap. Bear in mind that a `reason` is
+published prose: it is rendered on the register and indexed by the site search.
+
+### The deviations register
+
+`deviations.qmd` is generated at the project root on every render, and lists every override in the
+project: which document and block it targets, what kind of change it makes, the governance
+metadata, and the institution's local text. It is the only place a `mode=delete` is visible at all
+— a deleted block leaves nothing in the composed document but a comment — so the register quotes
+the baseline text that was removed.
+
+Each row links into the composed document at the section the change landed in. The anchor is
+resolved from the composed output rather than from the baseline, because a replace or a delete can
+take away the very heading a baseline-derived link would have pointed at; where an override leaves
+nothing to link to, the row links to the document instead.
+
+A project with no override files still gets a register, saying so. "Adopted verbatim" is evidence;
+a missing page is not.
 
 ### Provenance
 
@@ -247,20 +271,22 @@ _extensions/isms/
     isms.ts            # entry point for quarto run and used as pre-render hook: compose, write changed files, prune stale ones
     lib/project.ts     # loadProject() — reads the manifest
     lib/compose.ts     # per-document composition, override loading and validation
-    lib/blocks.ts      # block grammar: parse, emit, normalise, hash
+    lib/blocks.ts      # block grammar: parse and emit
+    lib/deviations.ts  # the deviations register: anchor resolution and rendering
 _overrides/*.qmd       # institution-local overrides (tracked in version control)
 docs/*.qmd             # composed output (generated, gitignored)
+deviations.qmd         # the deviations register (generated, gitignored)
 ```
 
 ## Status and roadmap
 
 Working today: variables, the block grammar, all four override modes, override validation,
-provenance markers, composed-document pruning.
+provenance markers, composed-document pruning, the deviations register.
 
 Not yet built:
 
-- **The deviations register.** A `deviations.qmd` collecting every `reason` / `approved-by` /
-  `approved-date` into one auditable table. Stubbed out in `_extension.yml`.
+- **Validation of `approved-date`.** The attribute is free text, so `14/07/2026` and `2026-07-14`
+  can coexist in one register, unsortable.
 - **Front-matter overrides**, and appending institution-only sections outside the baseline block
   set.
 - **Manifest/source cross-validation** of the `blocks:` lists.

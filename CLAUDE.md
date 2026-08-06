@@ -41,12 +41,14 @@ runs automatically on every render:
 2. `lib/compose.ts` — for each manifest document, parse the baseline `.qmd`, load and validate
    `_overrides/<ID>.qmd` if present, apply the overrides, re-emit front matter + a
    `DO NOT EDIT BY HAND` banner + body.
-3. `cli/isms.ts` — writes results to `<root>/docs/<ID>-<slug>.qmd` (only when content changed),
+3. `lib/deviations.ts` — collects every override's governance metadata plus the anchor it landed
+   on, and renders `deviations.qmd`.
+4. `cli/isms.ts` — writes results to `<root>/docs/<ID>-<slug>.qmd` (only when content changed),
    then **prunes** `docs/*.qmd` files not in the current result set, so un-adopting a document
    removes its output.
 
-`docs/` at the repo root is therefore generated output (currently untracked and not in
-`.gitignore`). Never hand-edit it. The extension's sidebar picks it up via `auto: "docs/*.qmd"`.
+`docs/` at the repo root and `deviations.qmd` are therefore generated output, both gitignored.
+Never hand-edit them. The extension's sidebar picks the documents up via `auto: "docs/*.qmd"`.
 
 ### manifest.yml is a public API
 
@@ -114,13 +116,39 @@ baseline. Restoring a visual chip means a Lua filter that consumes the marker co
 and attaches a class to the following AST node, sidestepping markdown indentation entirely.
 
 Not yet built: overriding front matter, appending institution-only sections outside the baseline
-block set, and the deviations register (`deviations.qmd`, still commented out in
-`_extension.yml`) that would collect every `reason` / `approved-by` into one auditable table.
+block set, and validation of `approved-date` (free text today, so date formats can be mixed and
+unsortable within one register).
 
-`normalise()` + `contentHash()` exist for upstream-drift detection and are intentionally
-Pandoc-free and cheap: a Quarto or Pandoc upgrade must never trigger a false drift storm across
-every institution at once. They absorb whitespace churn only — a typo fix is a semantic change
-and should demand review. Not yet called from the compose path.
+### The deviations register (`lib/deviations.ts`)
+
+Generated at the **project root**, not in `docs/`: it is a report about the controlled documents,
+not one of them, and the sidebar's `auto: "docs/*.qmd"` glob would file it under "Controlled
+documents". That puts it outside `writeAll`'s prune scope, which is safe only because the page is
+generated unconditionally — including the empty "adopted verbatim" state, which also keeps the
+static navbar `href` from dangling.
+
+Deep-link anchors are resolved by re-reading the **composed output**, not the baseline block tree.
+A baseline-derived anchor can name a heading a `replace` or `delete` just took away; that link
+resolves to nothing, the browser stays at the top of the page, and the reader concludes they
+mis-scrolled. A confidently wrong link in an audit artefact is worse than no link.
+
+The scan is **bounded by the block ranges `emit()` already writes**. Nothing in the grammar
+requires a block to open with a heading, so an unbounded upward scan would attribute the previous
+sibling section's heading to a block that starts with prose. The rule: first anchor inside the
+block's own range before its first nested child; else the last anchor inside a dotted ancestor's
+range above the block; else no fragment. Only explicit `{#...}` anchors count — Quarto's generated
+slug for a heading containing `{{< var organisation >}}` is not predictable from source.
+
+Because this module re-parses `emit()`'s markers, a block with an override and no marker range
+**throws** rather than silently dropping the link. If the marker format changes, both sides must.
+
+Quoted text in the detail sections is dedented (overrides are authored at the indent they splice
+into, and Pandoc would read a deep indent as a code block), has bare `#sec-...` links rebased onto
+the composed document, and has its headings demoted and stripped of explicit anchors so a quote
+cannot pose as a section of the register or steal the policy's id.
+
+The page deliberately carries **no generation timestamp**: `writeAll` writes only when content
+differs, so a clock value would mean git churn and a changed Quarto input on every render.
 
 ## Authoring baseline policy documents
 
