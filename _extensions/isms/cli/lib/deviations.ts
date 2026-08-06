@@ -368,7 +368,7 @@ export function renderRegister(
         `${MODE_LABEL[d.mode]} in [${flatten(doc.title)}](${href(doc.path, d.anchor)}) · ` +
         `approved by ${cell(d.approvedBy)} on ${cell(d.approvedDate)}.`,
         ``,
-        `**Reason.** ${cell(d.reason)}`,
+        `**Reason:** ${cell(d.reason)}`,
         ``,
         d.mode === "delete" ? `**Baseline text removed:**` : `**Local text:**`,
         ``,
