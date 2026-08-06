@@ -1,6 +1,9 @@
 # Composed documents, written by the isms pre-render hook. Root-anchored: the baseline
 # sources in _extensions/isms/docs/ are tracked.
 /docs/
+# The deviations register, written by the same hook. At the root rather than in docs/
+# because it is a report about the controlled documents, not one of them.
+/deviations.qmd
 
 # Rendered output and Quarto's caches.
 _site/

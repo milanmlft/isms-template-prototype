@@ -1,10 +1,11 @@
 #!/usr/bin/env -S quarto run
 
-import { bold, cyan, dim, green, red } from "stdlib/fmt_colors";
+import { bold, cyan, dim, green, red, yellow } from "stdlib/fmt_colors";
 import { dirname, join } from "stdlib/path";
 import { ensureDirSync } from "stdlib/fs";
 import { loadProject } from "./lib/project.ts"
 import { compose, COMPOSED_DIR } from "./lib/compose.ts";
+import { DEVIATIONS_PATH } from "./lib/deviations.ts";
 
 function writeAll(root: string, files: Map<string, string>): string[] {
   const written: string[] = [];
@@ -36,14 +37,19 @@ async function run(): Promise<number> {
 
   writeAll(root, result.files);
 
-  const overrides = result.docs.reduce((n, d) => n + d.overrides, 0);
+  const overrides = result.docs.reduce((n, d) => n + d.deviations.length, 0);
   console.log(
     `[isms] composed ${green(String(result.docs.length))} documents from baseline ` +
     `${cyan(baselineVersion)} · ${overrides} local override${overrides === 1 ? "" : "s"}`,
   );
   for (const doc of result.docs) {
-    const local = doc.overrides > 0 ? ` (${doc.overrides} local)` : "";
+    const local = doc.deviations.length > 0 ? ` (${doc.deviations.length} local)` : "";
     console.log(dim(`         ${doc.path}${local}`));
+  }
+  console.log(dim(`         ${DEVIATIONS_PATH} (${overrides} deviation${overrides === 1 ? "" : "s"})`));
+
+  for (const warning of result.warnings) {
+    console.log(yellow(`[isms] warning: ${warning}`));
   }
 
   return 0;
