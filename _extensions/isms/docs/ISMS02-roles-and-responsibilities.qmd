@@ -60,6 +60,8 @@ This document covers:
 
 ## Scope of the roles and responsibilities {#sec-scope}
 
+<!-- isms:begin id=scope hint="Name the groups, functions and roles within your institution's scope." -->
+
 This document applies to all groups and group members within the scope detailed in the
 [Research Data ISMS Scope](./ISMS01-Scope), including researchers, governance groups, IT service
 delivery teams and {{< var organisation }}-wide functions.
@@ -68,7 +70,11 @@ This document also outlines the framework for determining the appropriate resour
 that are to be available to, or possessed by, the members of each of the above groups, enabling them
 to establish, implement, maintain, and continually improve the {{< var isms_abbr >}}
 
+<!-- isms:end id=scope -->
+
 ## The Information Governance Framework {#sec-framework}
+
+<!-- isms:begin id=framework -->
 
 The high-level structure of the ISMS’s Information Governance Framework is represented in the
 diagram below.
@@ -76,6 +82,8 @@ diagram below.
 ![Information Governance Framework](./Images/IG_Framework.drawio.svg)
 
 ### Top Management
+
+<!-- isms:begin id=framework.top-management hint="Describe your institution's top management structure and its reporting line (e.g. board, executive sponsor, risk committee)." -->
 
 The ISMS Top Management consists of UCL’s Senior Information Risk Owner (SIRO) and the Information
 Risk Governance Committee (IRGC), chaired by the SIRO. The SIRO is a UCL executive and reports to
@@ -92,7 +100,11 @@ Full details of IRGC membership and responsibilities can be found in the
 Full details of UCL’s formal committees can be found on the
 [Committees webpage](https://www.ucl.ac.uk/about/leadership/governance/committees).
 
+<!-- isms:end id=framework.top-management -->
+
 ### Operational Management Group (OMG)
+
+<!-- isms:begin id=framework.omg hint="Describe your institution's operational governance group and how its membership is drawn." -->
 
 The OMG reports to the IRGC to assure that the ISMS is operating effectively, delivering information
 security objectives and managing information risks within tolerance. While the OMG is responsible
@@ -109,7 +121,13 @@ that form part of the scope and are managed by the UCL Information Services Divi
 Centre for Advanced Research Computing (ARC). They are represented at the OMG to ensure these
 Environments are operating safely.
 
+<!-- isms:end id=framework.omg -->
+
+<!-- isms:end id=framework -->
+
 ## Resources {#sec-resources}
+
+<!-- isms:begin id=resources -->
 
 Funding for ISMS and all technical environments (TREs) is provided by the UCL
 [Change and Digital Committee structure](https://www.ucl.ac.uk/governance-compliance/committees/change-and-digital-committee).
@@ -117,7 +135,11 @@ Top management requests funding from the Change and Digital Committee in the for
 Top Management ensures sufficient resources are available. Where resource constraints pose risks to
 the organisation, top management escalates to UMC.
 
+<!-- isms:end id=resources -->
+
 ## Competence {#sec-competence}
+
+<!-- isms:begin id=competence -->
 
 UCL determines the necessary competence of persons doing work under its control that affects its
 information security performance, including staff, suppliers, and researchers, and ensures they are
@@ -136,7 +158,11 @@ Approved researcher training ensures it meets the requirements of our key data p
 the NHS. UCL-wide training is mandatory and designed by the UCL Information Security Group to meet
 the requirements of UCL’s obligations to data subjects.
 
+<!-- isms:end id=competence -->
+
 ## Shared Responsibility Model {#sec-model}
+
+<!-- isms:begin id=model -->
 
 Security and compliance are shared responsibilities among infrastructure providers, environment
 providers, research teams, and data stewards. The model below provides an overview of how these
@@ -144,7 +170,11 @@ responsibilities are allocated.
 
 ![Shared Responsibility Model](./Images/Shared_Responsibility_Model.PNG)
 
+<!-- isms:end id=model -->
+
 ## Approved Researcher, Study and Project Roles {#sec-roles}
+
+<!-- isms:begin id=roles -->
 
 Users of the TREs are authorised through the following structure and per the
 [Access Control Policy](RISM03-Access_Control_Policy.md)
@@ -156,6 +186,8 @@ Users of the TREs are authorised through the following structure and per the
 
 ### Approved Researcher Role
 
+<!-- isms:begin id=roles.approved-researcher -->
+
 Approved researcher roles have no access to data by default within any project, Approved researchers
 can apply to create Studies (see below) or access projects. An approved researcher must provide
 evidence that they have up-to-date approved information governance training and sign an
@@ -164,7 +196,11 @@ evidence that they have up-to-date approved information governance training and 
 An approved researcher must be covered by a legal agreement, for example, a staff contract (for UCL
 staff) or a research contract (for external collaborators).
 
+<!-- isms:end id=roles.approved-researcher -->
+
 ### Study Roles
+
+<!-- isms:begin id=roles.study -->
 
 Study roles have no access to data within projects by default.
 
@@ -184,7 +220,11 @@ Asset Administrator responsibilities as detailed in the
 Information Asset Owners and Information Asset Administrators must be both substantive (full)
 members of UCL staff and approved researchers.
 
+<!-- isms:end id=roles.study -->
+
 ### Project Roles
+
+<!-- isms:begin id=roles.project -->
 
 Project roles have access to data within projects as approved by the Information Asset Owner or
 Information Asset Administrator.
@@ -204,7 +244,13 @@ others may be limited to read-only access.
 All study and project users are encouraged to participate as members of the research community,
 raising issues and requesting improvements to the environment.
 
+<!-- isms:end id=roles.project -->
+
+<!-- isms:end id=roles -->
+
 ## Roles Catalogue {#sec-roles-catalogue}
+
+<!-- isms:begin id=roles-catalogue -->
 
 | User Roles                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                                                                                                                                                                                          |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -255,6 +301,12 @@ raising issues and requesting improvements to the environment.
 
 ### Annex A - Suitable Training Resources
 
+<!-- isms:begin id=roles-catalogue.annex-a hint="List your institution's approved information governance training courses." -->
+
 | Role                | Training                            | Link                        |
 | ------------------- | ----------------------------------- | --------------------------- |
 | Approved Researcher | NHS Digital Data Security Awareness | https://portal.e-lfh.org.uk |
+
+<!-- isms:end id=roles-catalogue.annex-a -->
+
+<!-- isms:end id=roles-catalogue -->

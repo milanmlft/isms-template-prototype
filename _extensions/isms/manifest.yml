@@ -5,6 +5,25 @@
 baseline_version: 0.2.0
 
 documents:
+  - id: ISMS02
+    file: docs/ISMS02-roles-and-responsibilities.qmd
+    title: Roles and Responsibilities
+    blocks:
+      - overview
+      - scope
+      - framework
+      - framework.top-management
+      - framework.omg
+      - resources
+      - competence
+      - model
+      - roles
+      - roles.approved-researcher
+      - roles.study
+      - roles.project
+      - roles-catalogue
+      - roles-catalogue.annex-a
+
   - id: ISMS03
     file: docs/ISMS03-access-control-policy.qmd
     title: Access Control Policy
