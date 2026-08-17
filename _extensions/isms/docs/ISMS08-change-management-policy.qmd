@@ -1,6 +1,18 @@
 ---
 isms-id: ISMS08
 title: "ISMS08 - Change Management Policy"
+filename: ISMS08-change-management-policy
+author: Tim Machin
+classification: public
+version: 1.1
+review:
+  reviewer: Victor Olago
+  date: 10/02/2025
+  period: 3 years
+approval:
+  approver: OMG
+  date: 12/03/2025
+sources: null
 baseline-doc-version: "1.0"
 number-sections: true
 provenance: >
@@ -8,14 +20,13 @@ provenance: >
   from any institution's approved policy and not fit for adoption as-is.
 ---
 
+{{< include _preamble.qmd >}}
+
 <!-- isms:begin id=overview -->
 
 ## Document Overview {#sec-overview}
 
-This Change Management Policy establishes how changes to {{< var environment_name >}}s
-within the scope of {{< var organisation >}}'s {{< var isms_name >}} are proposed, assessed,
-approved and recorded, so that changes do not undermine the confidentiality, integrity or
-availability of the information those environments hold.
+The purpose of this policy is to define the requirements for managing change. Any processes used to manage changes in specific Environments shall adhere to this policy. Changes to any supporting IT services should also adhere to this policy.
 
 <!-- isms:end id=overview -->
 

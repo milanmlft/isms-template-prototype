@@ -25,6 +25,8 @@ export const COMPOSED_DIR = "docs";
  */
 export const OVERRIDES_DIR = "_overrides";
 
+const PREAMBLE_FILE = join(COMPOSED_DIR, "_preamble.qmd")
+
 export interface ComposedDoc {
   ismsId: string;
   title: string;
@@ -82,7 +84,10 @@ export async function compose(project: Project): Promise<ComposeResult> {
     })
   }
 
+  const baseline_preamble = Deno.readTextFileSync(join(baseline.dir, PREAMBLE_FILE))
+
   files.set(DEVIATIONS_PATH, tidy(renderRegister(banner, baselineVersion, docs)));
+  files.set(PREAMBLE_FILE, baseline_preamble)
   return { files, docs, warnings };
 }
 
