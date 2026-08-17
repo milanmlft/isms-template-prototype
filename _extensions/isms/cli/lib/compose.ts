@@ -1,5 +1,6 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "stdlib/yaml";
-import { join } from "stdlib/path"
+import { join, relative } from "stdlib/path"
+import { walkSync } from "stdlib/fs";
 import { DocumentSpec, Project } from "./project.ts"
 import {
   emit,
@@ -39,6 +40,10 @@ export interface ComposedDoc {
 
 export interface ComposeResult {
   files: Map<string, string>;
+  /**
+   * Baseline asset files to mirror into the composed tree, as composed path
+   */
+  assets: Map<string, string>;
   docs: ComposedDoc[];
   /** Governance gaps worth naming. Not errors: composition still succeeded. */
   warnings: string[];
@@ -88,7 +93,36 @@ export async function compose(project: Project): Promise<ComposeResult> {
 
   files.set(DEVIATIONS_PATH, tidy(renderRegister(banner, baselineVersion, docs)));
   files.set(PREAMBLE_FILE, baseline_preamble)
-  return { files, docs, warnings };
+
+  const { assets, warnings: assetWarnings } = collectAssets(baseline.dir);
+  warnings.push(...assetWarnings);
+  return { files, assets, docs, warnings };
+}
+
+/**
+ * Everything under the baseline `docs/` tree that is not a `.qmd` — images, diagram sources, a
+ * CSV an annex tabulates — mapped to the same relative position in the composed tree.
+ */
+function collectAssets(baselineDir: string): { assets: Map<string, string>; warnings: string[] } {
+  const assets = new Map<string, string>();
+  const warnings: string[] = [];
+  const dir = join(baselineDir, COMPOSED_DIR);
+  // followSymlinks stops the walk descending through a linked directory; the isSymlink test below
+  // is still needed, because a linked *file* is yielded as an entry and Deno.readFileSync would
+  // follow it.
+  for (const entry of walkSync(dir, { includeDirs: false, followSymlinks: false, skip: [/\.qmd$/] })) {
+    const rel = join(COMPOSED_DIR, relative(dir, entry.path));
+    if (entry.isSymlink) {
+      warnings.push(`baseline asset ${rel} is a symlink and was not copied`);
+      continue;
+    }
+    if (entry.name.startsWith(".")) {
+      warnings.push(`baseline asset ${rel} is a dotfile and was not copied`);
+      continue;
+    }
+    assets.set(rel, entry.path);
+  }
+  return { assets, warnings };
 }
 
 /**

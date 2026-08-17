@@ -64,7 +64,7 @@ This document covers:
 
 This document applies to all groups and group members within the scope detailed in the
 [Research Data ISMS Scope](./ISMS01-Scope), including researchers, governance groups, IT service
-delivery teams and {{< var organisation }}-wide functions.
+delivery teams and {{< var organisation >}}-wide functions.
 
 This document also outlines the framework for determining the appropriate resources and competencies
 that are to be available to, or possessed by, the members of each of the above groups, enabling them
@@ -79,7 +79,7 @@ to establish, implement, maintain, and continually improve the {{< var isms_abbr
 The high-level structure of the ISMS’s Information Governance Framework is represented in the
 diagram below.
 
-![Information Governance Framework](./Images/IG_Framework.drawio.svg)
+![Information Governance Framework](./images/IG_Framework.drawio.svg)
 
 ### Top Management
 
@@ -168,7 +168,7 @@ Security and compliance are shared responsibilities among infrastructure provide
 providers, research teams, and data stewards. The model below provides an overview of how these
 responsibilities are allocated.
 
-![Shared Responsibility Model](./Images/Shared_Responsibility_Model.PNG)
+![Shared Responsibility Model](./images/Shared_Responsibility_Model.png)
 
 <!-- isms:end id=model -->
 

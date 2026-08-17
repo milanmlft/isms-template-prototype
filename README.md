@@ -91,13 +91,20 @@ on every render. For each document in `manifest.yml` the CLI:
 3. re-emits front matter, a `DO NOT EDIT BY HAND` banner, and the body with overrides spliced in,
    wrapping each block in a provenance comment;
 4. records each override's governance metadata, and the section it landed in, for the register;
-5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** any `docs/*.qmd` not in the current
-   result set — so removing a document from the manifest removes its output.
+5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** anything under `docs/` not in the
+   current result set — so removing a document from the manifest removes its output.
 
 It then writes `deviations.qmd`, the register of everything the institution changed.
 
-`docs/` is therefore build output and is gitignored, as is `deviations.qmd`; the extension's
-sidebar picks the documents up via `auto: "docs/*.qmd"`. Edit the override file, never `docs/`.
+Non-`.qmd` files in the baseline `docs/` tree — images, diagram sources, anything a document
+references by relative path — are **mirrored** to the same relative position under the composed
+`docs/`, so `![…](./images/x.svg)` resolves the same way from the composed document as it does from
+the baseline source. There is nothing to declare: the convention is the whole rule. Symlinks and
+dotfiles are skipped with a warning, since following a link in a vendored baseline would publish
+whatever it points at.
+
+`docs/` is therefore build output and is gitignored, as is `deviations.qmd`; the extension's sidebar
+picks the documents up via `auto: "docs/*.qmd"`. Edit the override file, never `docs/`.
 
 Composition is fail-loud. A typo in a block ID, an override that could never reach the output, an
 unknown attribute, an unclosed block — all abort the render with a `file:line: message`, rather than
@@ -167,26 +174,26 @@ document: ISMS03
 metadata: they record _why_ the institution deviates and who signed it off. They are the input to
 the [deviations register](#the-deviations-register).
 
-All three are optional and their values are not validated. An override missing one still composes
-— it may be mid-approval — but the CLI warns with a `file:line`, and the register prints
+All three are optional and their values are not validated. An override missing one still composes —
+it may be mid-approval — but the CLI warns with a `file:line`, and the register prints
 `(not recorded)` rather than a dash, so a gap reads as a gap. Bear in mind that a `reason` is
 published prose: it is rendered on the register and indexed by the site search.
 
 ### The deviations register
 
 `deviations.qmd` is generated at the project root on every render, and lists every override in the
-project: which document and block it targets, what kind of change it makes, the governance
-metadata, and the institution's local text. It is the only place a `mode=delete` is visible at all
-— a deleted block leaves nothing in the composed document but a comment — so the register quotes
-the baseline text that was removed.
+project: which document and block it targets, what kind of change it makes, the governance metadata,
+and the institution's local text. It is the only place a `mode=delete` is visible at all — a deleted
+block leaves nothing in the composed document but a comment — so the register quotes the baseline
+text that was removed.
 
 Each row links into the composed document at the section the change landed in. The anchor is
 resolved from the composed output rather than from the baseline, because a replace or a delete can
 take away the very heading a baseline-derived link would have pointed at; where an override leaves
 nothing to link to, the row links to the document instead.
 
-A project with no override files still gets a register, saying so. "Adopted verbatim" is evidence;
-a missing page is not.
+A project with no override files still gets a register, saying so. "Adopted verbatim" is evidence; a
+missing page is not.
 
 ### Provenance
 
@@ -267,21 +274,23 @@ _extensions/isms/
   _extension.yml       # Quarto contributions: project type, format, pre-render hook
   manifest.yml         # document registry + published block-ID surface
   docs/*.qmd           # authored baseline policy sources
+  docs/images/         # assets the sources reference, mirrored into the composed docs/
   cli/
-    isms.ts            # entry point for quarto run and used as pre-render hook: compose, write changed files, prune stale ones
+    isms.ts            # entry point for quarto run and used as pre-render hook: compose, write changed files, copy changed assets, prune stale ones
     lib/project.ts     # loadProject() — reads the manifest
     lib/compose.ts     # per-document composition, override loading and validation
     lib/blocks.ts      # block grammar: parse and emit
     lib/deviations.ts  # the deviations register: anchor resolution and rendering
 _overrides/*.qmd       # institution-local overrides (tracked in version control)
 docs/*.qmd             # composed output (generated, gitignored)
+docs/images/           # mirrored baseline assets (generated, gitignored)
 deviations.qmd         # the deviations register (generated, gitignored)
 ```
 
 ## Status and roadmap
 
 Working today: variables, the block grammar, all four override modes, override validation,
-provenance markers, composed-document pruning, the deviations register.
+provenance markers, asset mirroring, composed-output pruning, the deviations register.
 
 Not yet built:
 
