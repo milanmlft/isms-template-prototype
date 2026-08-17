@@ -1,1 +1,6 @@
+# Excluded from `quarto use template`: agent guidance and dev tooling belong to this repo as the
+# baseline's own workspace, not to an adopting institution's project.
 CLAUDE.md
+_dev/
+.pi/
+.claude/

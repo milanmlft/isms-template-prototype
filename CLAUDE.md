@@ -16,11 +16,33 @@ approved policy.
 quarto render                              # compose + build the site into _site/
 quarto preview                             # live-reloading dev server
 quarto run _extensions/isms/cli/isms.ts    # run composition only, without rendering
+
+# Verification pass (there is no test suite). See the isms-verify skill for how to read failures.
+quarto render && quarto run .pi/skills/isms-verify/scripts/check.ts --site
 ```
 
 There is no test suite, linter, or build step beyond Quarto. The CLI is Deno TypeScript run
 through `quarto run` — the bare `stdlib/...` import specifiers are resolved by Quarto's own
 import map, so `deno run` on these files will fail.
+
+### Sandboxed sessions (gondolin)
+
+A session started with `pi -e ~/.pi/agent/opt-extensions/gondolin` routes `read`/`write`/`edit`/
+`bash`/`grep`/`find`/`ls` and `!` commands into an Alpine micro-VM, with this directory mounted at
+`/workspace`; writes there pass through to the host.
+
+The guest has **no `quarto`, and cannot practically get one**: gondolin publishes only musl (Alpine)
+images, while every Quarto build — including the Deno it bundles, which is what runs the CLI — is
+glibc, and Alpine packages no `quarto`. So **every command in the block above runs on the host**, in
+a separate terminal. Host `quarto preview` does pick up guest-side edits, because `/workspace`
+writes through.
+
+`git` is absent from the guest too. `apk add git` works (the guest has network), but the VM is
+recreated per session and only `/workspace` survives, and the host `~/.gitconfig` is not mounted, so
+a commit needs its identity re-set each time. Treat `git` as a host command as well.
+
+What this does and does not buy: the guest cannot see host files outside this directory, but the
+example extension sets no `allowedHosts`, so outbound network from the guest is unrestricted.
 
 ## Architecture
 
