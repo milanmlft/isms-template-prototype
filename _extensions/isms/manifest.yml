@@ -30,6 +30,5 @@ documents:
     blocks:
       - overview
       - scope
-      - classification
-      - assessment
-      - review
+      - managing
+      - types
