@@ -12,11 +12,11 @@ review:
 approval:
   approver: OMG
   date: 12/03/2025
-sources:
-  - "[SLMS-IG05](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG05%20IG%20Lead%20Role.docx)"
-  - "[SLMS-IG07](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG07%20IG%20Officer%20Role.doc)"
-  - "[SLMS-IG16](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG16%20Training%20Policy.docx)"
-  - "[SLMS-IG32](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG32%20IG%20Framework%20Roles%20and%20Responsibilities.docx)"
+sources: |
+  [SLMS-IG05](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG05%20IG%20Lead%20Role.docx),
+  [SLMS-IG07](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG07%20IG%20Officer%20Role.doc)
+  [SLMS-IG16](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG16%20Training%20Policy.docx),
+  [SLMS-IG32](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG32%20IG%20Framework%20Roles%20and%20Responsibilities.docx)
 baseline-doc-version: "1.0"
 number-sections: true
 provenance: >
