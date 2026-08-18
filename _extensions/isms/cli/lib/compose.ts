@@ -131,6 +131,15 @@ export async function compose(project: Project): Promise<ComposeResult> {
         `An asset can never share a composed path with a document; rename the source file.`,
       );
     }
+    const existingRel = foldedAssetPaths.get(key);
+    if (existingRel !== undefined) {
+      const existing = assets.get(existingRel)!;
+      throw new Error(
+        `${asset.origin} asset ${rel} (from ${asset.path}) collides with ` +
+        `${existing.origin} asset ${existingRel} (from ${existing.path}). ` +
+        `Rename one of the files so the composed path is unique.`,
+      );
+    }
 
     foldedAssetPaths.set(key, rel);
     assets.set(rel, asset);
