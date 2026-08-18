@@ -1,11 +1,11 @@
 **Document Name:** {{< meta filename >}}
 
-**Classification:**	{{< meta classification >}}
+**Classification:** {{< meta classification >}}
 
 **Author:** {{< meta author >}}
 
 **version:** {{< meta version >}}
-	
+
 **Last Review:** {{< meta review.date >}}
 
 **Last Reviewed by:** {{< meta review.reviewer >}}
@@ -17,4 +17,3 @@
 **Review Period:** {{< meta review.period >}}
 
 **Sources:** {{< meta sources >}}
-
