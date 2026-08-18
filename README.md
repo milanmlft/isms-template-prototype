@@ -9,7 +9,7 @@ plus explicit, attributed overrides on named sections of the text. The rendered 
 from the two at build time, so an institution can pull a new baseline version without losing its
 local changes, and every locally-changed paragraph is traceable to the override that produced it.
 
-<!-- prettier-ignore -->
+<!-- prettier-ignore-start -->
 > [!WARNING]
 > **Prototype.** The policy text in `_extensions/isms/docs/*.qmd` is placeholder content,
 > written to exercise the composition machinery. It is not derived from any institution's approved
