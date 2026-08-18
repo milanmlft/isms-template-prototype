@@ -1,6 +1,6 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "stdlib/yaml";
-import { join, relative } from "stdlib/path"
-import { walkSync } from "stdlib/fs";
+import { join, relative, SEPARATOR } from "stdlib/path"
+import { WalkError, walkSync } from "stdlib/fs";
 import { DocumentSpec, Project } from "./project.ts"
 import {
   emit,
@@ -38,15 +38,29 @@ export interface ComposedDoc {
   deviations: Deviation[];
 }
 
+/**
+ * A non-`.qmd` file to mirror byte-for-byte into the composed tree. `origin` is carried through
+ * to the console summary 
+ */
+export interface Asset {
+  /** Absolute path to the file to copy bytes from. */
+  path: string;
+  origin: "baseline" | "override";
+}
+
 export interface ComposeResult {
   files: Map<string, string>;
-  /**
-   * Baseline asset files to mirror into the composed tree, as composed path
-   */
-  assets: Map<string, string>;
+  assets: Map<string, Asset>;
   docs: ComposedDoc[];
   /** Governance gaps worth naming. Not errors: composition still succeeded. */
   warnings: string[];
+}
+
+/**
+ * Folds a path under the composed tree for collision comparison. 
+ */
+export function foldPath(rel: string): string {
+  return rel.normalize("NFC").toLowerCase();
 }
 
 export async function compose(project: Project): Promise<ComposeResult> {
@@ -94,35 +108,75 @@ export async function compose(project: Project): Promise<ComposeResult> {
   files.set(DEVIATIONS_PATH, tidy(renderRegister(banner, baselineVersion, docs)));
   files.set(PREAMBLE_FILE, baseline_preamble)
 
-  const { assets, warnings: assetWarnings } = collectAssets(baseline.dir);
-  warnings.push(...assetWarnings);
+  const { assets: baselineAssets, warnings: baselineAssetWarnings } = walkAssets(
+    join(baseline.dir, COMPOSED_DIR),
+    "baseline",
+  );
+  const { assets: overrideAssets, warnings: overrideAssetWarnings } = collectOverrideAssets(root);
+  warnings.push(...baselineAssetWarnings, ...overrideAssetWarnings);
+
+  const composedPaths = new Map<string, string>();
+  for (const rel of files.keys()) composedPaths.set(foldPath(rel), rel);
+
+  const assets = new Map<string, Asset>();
+  const foldedAssetPaths = new Map<string, string>(); // folded composed path -> the rel that claimed it
+  for (const [rel, asset] of [...baselineAssets, ...overrideAssets]) {
+    const key = foldPath(rel);
+
+    const docClash = composedPaths.get(key);
+    if (docClash !== undefined) {
+      throw new Error(
+        `${asset.origin} asset ${rel} (from ${asset.path}) collides with the composed document ` +
+        `at ${docClash}. ` +
+        `An asset can never share a composed path with a document; rename the source file.`,
+      );
+    }
+
+    foldedAssetPaths.set(key, rel);
+    assets.set(rel, asset);
+  }
+
   return { files, assets, docs, warnings };
 }
 
 /**
- * Everything under the baseline `docs/` tree that is not a `.qmd` — images, diagram sources, a
- * CSV an annex tabulates — mapped to the same relative position in the composed tree.
+ * Walk a docs-shaped directory tree and map every non-`.qmd` file it contains to its position
+ * under the composed `docs/`. Shared by the baseline walk (`_extensions/isms/docs/`) and the
+ * institution walk (`_overrides/`, see `collectOverrideAssets`) 
  */
-function collectAssets(baselineDir: string): { assets: Map<string, string>; warnings: string[] } {
-  const assets = new Map<string, string>();
+function walkAssets(dir: string, origin: Asset["origin"]): { assets: Map<string, Asset>; warnings: string[] } {
+  const assets = new Map<string, Asset>();
   const warnings: string[] = [];
-  const dir = join(baselineDir, COMPOSED_DIR);
-  // followSymlinks stops the walk descending through a linked directory; the isSymlink test below
-  // is still needed, because a linked *file* is yielded as an entry and Deno.readFileSync would
-  // follow it.
-  for (const entry of walkSync(dir, { includeDirs: false, followSymlinks: false, skip: [/\.qmd$/] })) {
-    const rel = join(COMPOSED_DIR, relative(dir, entry.path));
+  for (const entry of walkSync(dir, { includeDirs: false, followSymlinks: false, skip: [/\.qmd$/i] })) {
+    const relFromRoot = relative(dir, entry.path);
+    const rel = join(COMPOSED_DIR, relFromRoot);
     if (entry.isSymlink) {
-      warnings.push(`baseline asset ${rel} is a symlink and was not copied`);
+      warnings.push(`${origin} asset ${rel} is a symlink and was not copied`);
       continue;
     }
-    if (entry.name.startsWith(".")) {
-      warnings.push(`baseline asset ${rel} is a dotfile and was not copied`);
+    if (relFromRoot.split(SEPARATOR).some((segment: any) => segment.startsWith("."))) {
+      warnings.push(`${origin} asset ${rel} is a dotfile, or inside one, and was not copied`);
       continue;
     }
-    assets.set(rel, entry.path);
+    assets.set(rel, { path: entry.path, origin });
   }
   return { assets, warnings };
+}
+
+/**
+ * Every non-`.qmd` file under `<root>/_overrides/` is mirrored to the same relative position
+ * under the composed `docs/` 
+ */
+function collectOverrideAssets(root: string): { assets: Map<string, Asset>; warnings: string[] } {
+  try {
+    return walkAssets(join(root, OVERRIDES_DIR), "override");
+  } catch (err: any) {
+    // No `_overrides/` at all is the normal case — most adopting institutions have no local
+    if (err instanceof WalkError && err.cause instanceof Deno.errors.NotFound) {
+      return { assets: new Map(), warnings: [] };
+    }
+    throw err;
+  }
 }
 
 /**

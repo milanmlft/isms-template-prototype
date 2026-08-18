@@ -9,10 +9,13 @@ plus explicit, attributed overrides on named sections of the text. The rendered 
 from the two at build time, so an institution can pull a new baseline version without losing its
 local changes, and every locally-changed paragraph is traceable to the override that produced it.
 
+<!-- prettier-ignore -->
 > [!WARNING]
 > **Prototype.** The policy text in `_extensions/isms/docs/*.qmd` is placeholder content,
 > written to exercise the composition machinery. It is not derived from any institution's approved
 > policy and is not fit for adoption as-is.
+
+<!-- prettier-ignore-end -->
 
 ## Requirements
 
@@ -99,9 +102,20 @@ It then writes `deviations.qmd`, the register of everything the institution chan
 Non-`.qmd` files in the baseline `docs/` tree — images, diagram sources, anything a document
 references by relative path — are **mirrored** to the same relative position under the composed
 `docs/`, so `![…](./images/x.svg)` resolves the same way from the composed document as it does from
-the baseline source. There is nothing to declare: the convention is the whole rule. Symlinks and
-dotfiles are skipped with a warning, since following a link in a vendored baseline would publish
-whatever it points at.
+the baseline source. There is nothing to declare: the convention is the whole rule.
+
+The same rule applies a second time, at `_overrides/`: any non-`.qmd` file there is mirrored to the
+same relative position under `docs/`, so `_overrides/images/org-chart.png` becomes
+`docs/images/org-chart.png` and an override's `![…](./images/org-chart.png)` resolves once spliced
+into the composed document. No new directory or config key — `_overrides/` is already the
+institution's half of the source tree. A file the institution ships at a path a baseline asset
+already occupies is a **hard error** naming both sources: letting either side silently win would
+substitute content inside a controlled document with no `reason`/`approved-by`/`approved-date` and
+no line in the deviations register. To replace a baseline diagram, override the block that
+references it and point at a new filename instead — that keeps the change governed. Naming a path
+the baseline _references but does not ship_ is fine; it is a fill-in-the-blank, not a collision —
+but it is a silent one: no override ran to fill it in, so nothing records that the resulting figure
+is institution-supplied rather than part of the baseline. See the governance limitation below.
 
 `docs/` is therefore build output and is gitignored, as is `deviations.qmd`; the extension's sidebar
 picks the documents up via `auto: "docs/*.qmd"`. Edit the override file, never `docs/`.
@@ -109,6 +123,18 @@ picks the documents up via `auto: "docs/*.qmd"`. Edit the override file, never `
 Composition is fail-loud. A typo in a block ID, an override that could never reach the output, an
 unknown attribute, an unclosed block — all abort the render with a `file:line: message`, rather than
 silently dropping content that someone has formally approved.
+
+**Known governance limitations,** both about the gap between what the register can see and what the
+composed document actually contains:
+
+The collision check and the deviations register both operate on _paths_, not on asset _content_. An
+override's `reason`/`approved-by`/`approved-date` are recorded once, against the block that
+references an image; nothing re-checks or re-flags that block if the institution later replaces the
+referenced file's bytes without touching the override text that names it — the same governance
+metadata stays attached to different image content, and neither the register nor the render log
+shows that anything changed. Treat an asset referenced from an approved override as covered by that
+approval only as long as its bytes are unchanged; a content swap needs its own review, which this
+pipeline does not currently prompt for.
 
 ## Customising: variables
 
@@ -274,7 +300,7 @@ _extensions/isms/
   _extension.yml       # Quarto contributions: project type, format, pre-render hook
   manifest.yml         # document registry + published block-ID surface
   docs/*.qmd           # authored baseline policy sources
-  docs/images/         # assets the sources reference, mirrored into the composed docs/
+  docs/images/         # non-.qmd files here are mirrored into the composed docs/, whether referenced or not
   cli/
     isms.ts            # entry point for quarto run and used as pre-render hook: compose, write changed files, copy changed assets, prune stale ones
     lib/project.ts     # loadProject() — reads the manifest
@@ -282,8 +308,9 @@ _extensions/isms/
     lib/blocks.ts      # block grammar: parse and emit
     lib/deviations.ts  # the deviations register: anchor resolution and rendering
 _overrides/*.qmd       # institution-local overrides (tracked in version control)
+_overrides/**          # any other file here (not just under images/, at any depth) is an asset, mirrored into docs/ the same way
 docs/*.qmd             # composed output (generated, gitignored)
-docs/images/           # mirrored baseline assets (generated, gitignored)
+docs/images/           # mirrored assets, baseline and institution alike (generated, gitignored)
 deviations.qmd         # the deviations register (generated, gitignored)
 ```
 
