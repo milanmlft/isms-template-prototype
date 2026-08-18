@@ -23,9 +23,9 @@ provenance: >
 
 {{< include _preamble.qmd >}}
 
-## Document Overview {#sec-overview}
-
 <!-- isms:begin id=overview -->
+
+## Document Overview {#sec-overview}
 
 This Access Control Policy establishes the requirements to ensure the protection of
 {{< var environment_name >}}s within the scope of {{< var organisation >}}'s
@@ -47,9 +47,9 @@ This document covers:
 
 <!-- isms:end id=overview -->
 
-## Document Scope {#sec-scope}
-
 <!-- isms:begin id=scope hint="Name the environments, applications and services in scope, and the categories of person to whom this policy applies." -->
+
+## Document Scope {#sec-scope}
 
 This policy applies to all employees, contractors, consultants, temporary staff, service
 accounts, and any other individuals with access to {{< var environment_name >}}s.
@@ -58,9 +58,9 @@ The scope includes the infrastructure, applications and services that support ea
 
 <!-- isms:end id=scope -->
 
-## Conventions used in this Document {#sec-conventions}
-
 <!-- isms:begin id=conventions -->
+
+## Conventions used in this Document {#sec-conventions}
 
 | Term | Definition |
 |------|------------|
@@ -70,9 +70,9 @@ The scope includes the infrastructure, applications and services that support ea
 
 <!-- isms:end id=conventions -->
 
-## Access Control Principles {#sec-principles}
-
 <!-- isms:begin id=principles -->
+
+## Access Control Principles {#sec-principles}
 
 Access to information systems shall be managed according to the following principles:
 
@@ -87,9 +87,9 @@ Access to information systems shall be managed according to the following princi
 
 <!-- isms:end id=principles -->
 
-## User Access Management {#sec-user-access}
-
 <!-- isms:begin id=user-access -->
+
+## User Access Management {#sec-user-access}
 
 All user access shall be managed by an appropriate role as described in the
 {{< var organisation >}} roles and responsibilities framework.
@@ -118,18 +118,18 @@ All user access shall be managed by an appropriate role as described in the
 
 <!-- isms:end id=user-access -->
 
-## Authentication Principles {#sec-authentication}
-
 <!-- isms:begin id=authentication -->
+
+## Authentication Principles {#sec-authentication}
 
 All users and systems shall comply with {{< var organisation >}}'s authentication standards
 and policies, including multi-factor authentication where required.
 
 <!-- isms:end id=authentication -->
 
-## Privileged Access Management {#sec-privileged-access}
-
 <!-- isms:begin id=privileged-access -->
+
+## Privileged Access Management {#sec-privileged-access}
 
 Administrative or privileged accounts shall be tightly controlled and limited to authorised
 personnel. Privileged accounts should be used only for administrative purposes. Privileged
@@ -139,9 +139,9 @@ shall be maintained.
 
 <!-- isms:end id=privileged-access -->
 
-## Physical Access {#sec-physical-access}
-
 <!-- isms:begin id=physical-access -->
+
+## Physical Access {#sec-physical-access}
 
 Physical access shall be granted only upon the authority of the facility owner or service
 manager. All physical information systems shall be protected in accordance with their value
@@ -151,9 +151,9 @@ to devices or data.
 
 <!-- isms:end id=physical-access -->
 
-## Network Access {#sec-network-access}
-
 <!-- isms:begin id=network-access -->
+
+## Network Access {#sec-network-access}
 
 - Diagnostic and configuration ports shall be enabled only for approved business reasons.
 - All unused ports shall be disabled or removed.
@@ -164,9 +164,9 @@ to devices or data.
 
 <!-- isms:end id=network-access -->
 
-## Operating System Access {#sec-os-access}
-
 <!-- isms:begin id=os-access -->
+
+## Operating System Access {#sec-os-access}
 
 - Users shall authenticate as authorised users at log-on.
 - Passwords shall be managed in accordance with {{< var organisation >}} password policies.
@@ -176,9 +176,9 @@ to devices or data.
 
 <!-- isms:end id=os-access -->
 
-## Information System Access {#sec-information-system-access}
-
 <!-- isms:begin id=information-system-access -->
+
+## Information System Access {#sec-information-system-access}
 
 - Accounts without adequate assurance shall be disabled until appropriate verification is
   provided.
@@ -189,9 +189,9 @@ to devices or data.
 
 <!-- isms:end id=information-system-access -->
 
-## Monitoring and Logging {#sec-monitoring}
-
 <!-- isms:begin id=monitoring -->
+
+## Monitoring and Logging {#sec-monitoring}
 
 Access to {{< var environment_name >}}s shall be logged and monitored for security
 incident investigation purposes. Logs should include a timestamp, the user's identity, and
