@@ -22,9 +22,9 @@ provenance: >
 
 {{< include _preamble.qmd >}}
 
-## Document Overview {#sec-overview}
-
 <!-- isms:begin id=overview -->
+
+## Document Overview {#sec-overview}
 
 The purpose of this policy is to define the requirements for managing change. Any processes used to
 manage changes in specific Environments shall adhere to this policy. Changes to any supporting IT
@@ -32,9 +32,9 @@ services should also adhere to this policy.
 
 <!-- isms:end id=overview -->
 
-## Document Scope {#sec-scope}
-
 <!-- isms:begin id=scope -->
+
+## Document Scope {#sec-scope}
 
 This policy applies to all departments, personnel, contractors, and third parties involved in the
 development, management, or modification of information systems, applications, and infrastructure
@@ -46,12 +46,11 @@ is not limited to changes affecting:
 - Hardware and network infrastructure
 - Security controls and configurations
 
-
 <!-- isms:end id=scope -->
 
-## Managing Change
+<!-- isms:begin id=managing hint="Adjust the change record fields to your own change process, and confirm which governance body retained records are made available to." -->
 
-<!-- isms:begin id=managing -->
+## Managing Change {#sec-managing}
 
 All changes should consider and document the following in a change record. Change records shall be
 retained and made available to the Operational Management Group on request:
@@ -96,9 +95,9 @@ retained and made available to the Operational Management Group on request:
 
 <!-- isms:end id=managing -->
 
-## Change Types
+<!-- isms:begin id=types hint="Define your own change type categories, examples, and approval chains for each." -->
 
-<!-- isms:begin id=types -->
+## Change Types {#sec-types}
 
 Changes should be classified according to the following definitions. Each change type should have a
 documented approval chain:
