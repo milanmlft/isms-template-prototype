@@ -91,8 +91,8 @@ on every render. For each document in `manifest.yml` the CLI:
 
 1. parses the baseline `.qmd` into a tree of named blocks (`lib/blocks.ts`);
 2. loads `_overrides/<ID>.qmd` if it exists, and validates every override against that tree;
-3. re-emits front matter, a `DO NOT EDIT BY HAND` banner, and the body with overrides spliced in,
-   wrapping each block in a provenance comment;
+3. re-emits the front matter merged with any the override file sets, a `DO NOT EDIT BY HAND`
+   banner, and the body with overrides spliced in, wrapping each block in a provenance comment;
 4. records each override's governance metadata, and the section it landed in, for the register;
 5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** anything under `docs/` not in the
    current result set — so removing a document from the manifest removes its output.
@@ -211,6 +211,46 @@ it may be mid-approval — but the CLI warns with a `file:line`, and the registe
 `(not recorded)` rather than a dash, so a gap reads as a gap. Bear in mind that a `reason` is
 published prose: it is rendered on the register and indexed by the site search.
 
+### Front matter
+
+The override file's own front matter is your front matter. Every key except the reserved
+`document:` is merged into the composed document's, and `docs/_preamble.qmd` prints most of them
+at the top of the page — so this is how you replace the baseline's placeholder
+`document-author: Policy Owner` and `approver: Approval Body` with the real thing.
+
+```yaml
+---
+document: ISMS03
+document-author: Head of Research Data Governance
+classification: internal
+review:
+  reviewer: Information Security Team
+  date: 01/09/2026
+approval:
+  approver: Operational Management Group
+---
+```
+
+Mappings merge key by key, so the `review.period` you did not mention keeps its baseline value.
+Anything else — a scalar, a list, an explicit `null` — replaces the baseline value outright.
+
+Four keys are refused, and the render stops with a `file:line`:
+
+| Key                    | Why                                                                     |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `isms-id`              | it is the ID your overrides are keyed on                                |
+| `baseline-doc-version` | it records which baseline release the document was composed from        |
+| `filename`             | it names the composed file, which the manifest decides                  |
+| `author`               | Quarto renders it as a second byline — set `document-author` instead    |
+
+A key that is not in the baseline front matter is allowed but warns, because the likeliest cause
+is a typo in one that is. An unquoted `2026-07-14` is a date to YAML, not a string; it is
+normalised back to `2026-07-14` rather than published as a UTC timestamp.
+
+Front-matter changes are **not** deviations and get no row in the register: replacing a
+placeholder author with a real name is adopting the baseline, not departing from it. A file
+carrying only front-matter keys leaves its document listed as adopted verbatim.
+
 ### The deviations register
 
 `deviations.qmd` is generated at the project root on every render, and lists every override in the
@@ -323,13 +363,13 @@ deviations.qmd         # the deviations register (generated, gitignored)
 
 ## Status and roadmap
 
-Working today: variables, the block grammar, all four override modes, override validation,
-provenance markers, asset mirroring, composed-output pruning, the deviations register.
+Working today: variables, the block grammar, all four override modes, front-matter overrides,
+override validation, provenance markers, asset mirroring, composed-output pruning, the deviations
+register.
 
 Not yet built:
 
 - **Validation of `approved-date`.** The attribute is free text, so `14/07/2026` and `2026-07-14`
   can coexist in one register, unsortable.
-- **Front-matter overrides**, and appending institution-only sections outside the baseline block
-  set.
+- **Appending institution-only sections** outside the baseline block set.
 - **Manifest/source cross-validation** of the `blocks:` lists.
