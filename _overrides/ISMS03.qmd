@@ -2,6 +2,19 @@
 # Institution-local overrides for ISMS03. This file is authored by the institution and is
 # tracked in version control; the composed document in docs/ is generated from it.
 document: ISMS03
+
+# Every key other than `document:` is merged into the composed document's front matter, which
+# is what docs/_preamble.qmd prints at the top of the page. Mappings merge key by key, so
+# naming `review.reviewer` here leaves the baseline's `review.period` untouched.
+# EXAMPLE VALUES, REPLACE ME.
+document-author: Head of Research Data Governance
+classification: internal
+review:
+  reviewer: Information Security Team
+  date: 01/09/2026
+approval:
+  approver: Operational Management Group
+  date: 05/09/2026
 ---
 
 <!-- isms:override id=scope mode=after
