@@ -4,7 +4,7 @@
 
 **Author:** {{< meta document-author >}}
 
-**version:** {{< meta version >}}
+**Version:** {{< meta version >}}
 
 **Last Review:** {{< meta review.date >}}
 
