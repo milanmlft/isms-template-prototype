@@ -1,7 +1,7 @@
 #!/usr/bin/env -S quarto run
 
 import { bold, cyan, dim, green, red, yellow } from "stdlib/fmt_colors";
-import { basename, dirname, join } from "stdlib/path";
+import { dirname, join } from "stdlib/path";
 import { ensureDirSync } from "stdlib/fs";
 import { equals } from "stdlib/bytes";
 import { loadProject } from "./lib/project.ts"
@@ -28,9 +28,8 @@ function writeAll(root: string, files: Map<string, string>): string[] {
  * Compares bytes before writing, for the same reason `writeAll` compares text: a rewritten file
  * is a changed mtime, which is a changed Quarto input, which is a needless re-render.
  */
-function copyAssets(root: string, assets: Map<string, Asset>): { copied: string[]; warnings: string[] } {
+function copyAssets(root: string, assets: Map<string, Asset>): string[] {
   const copied: string[] = [];
-  const warnings: string[] = [];
   for (const [rel, asset] of assets) {
     const abs = join(root, rel);
     const dir = dirname(abs);
@@ -42,7 +41,7 @@ function copyAssets(root: string, assets: Map<string, Asset>): { copied: string[
     if (existing === null || !equals(existing, content)) Deno.writeFileSync(abs, content);
     copied.push(rel);
   }
-  return { copied, warnings };
+  return copied;
 }
 
 /**
@@ -53,9 +52,8 @@ function copyAssets(root: string, assets: Map<string, Asset>): { copied: string[
  * directories it empties, so un-adopting the last document that used `images/` does not leave the
  * shell behind.
  */
-function prune(root: string, keep: Set<string>): { removed: string[]; warnings: string[] } {
+function prune(root: string, keep: Set<string>): string[] {
   const removed: string[] = [];
-  const warnings: string[] = [];
   const keepFolded = new Set([...keep].map(foldPath));
   // Returns whether the directory is empty once its own stale entries are gone, so the caller
   // can remove it; that is only knowable bottom-up.
@@ -86,7 +84,7 @@ function prune(root: string, keep: Set<string>): { removed: string[]; warnings: 
     // problem, and reading it as "nothing to prune" would hide it.
     if (!(err instanceof Deno.errors.NotFound)) throw err;
   }
-  return { removed, warnings };
+  return removed;
 }
 
 async function run(): Promise<number> {
@@ -96,8 +94,8 @@ async function run(): Promise<number> {
   const result = await compose(project);
 
   const written = writeAll(root, result.files);
-  const { copied: assets, warnings: assetWarnings } = copyAssets(root, result.assets);
-  const { removed, warnings: pruneWarnings } = prune(root, new Set([...written, ...assets]));
+  const assets = copyAssets(root, result.assets);
+  const removed = prune(root, new Set([...written, ...assets]));
 
   const overrides = result.docs.reduce((n, d) => n + d.deviations.length, 0);
   const localAssets = [...result.assets.values()].filter((a) => a.origin === "override").length;
@@ -121,7 +119,7 @@ async function run(): Promise<number> {
     for (const rel of removed) console.log(dim(`         ${rel}`));
   }
 
-  for (const warning of [...result.warnings, ...assetWarnings, ...pruneWarnings]) {
+  for (const warning of result.warnings) {
     console.log(yellow(`[isms] warning: ${warning}`));
   }
 
