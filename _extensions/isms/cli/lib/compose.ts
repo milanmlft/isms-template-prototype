@@ -103,10 +103,25 @@ export async function compose(project: Project): Promise<ComposeResult> {
     })
   }
 
-  const baseline_preamble = Deno.readTextFileSync(join(baseline.dir, PREAMBLE_FILE))
+  const preamblePath = join(baseline.dir, PREAMBLE_FILE);
+  let baselinePreamble: string;
+  try {
+    baselinePreamble = Deno.readTextFileSync(preamblePath);
+  } catch (err) {
+    // Unlike every other baseline file, the preamble is composed by hard-coded path rather than
+    // through the manifest, so a vendored baseline missing it would otherwise abort with a raw
+    // NotFound naming neither the file's role nor the fix.
+    if (err instanceof Deno.errors.NotFound) {
+      throw new Error(
+        `${preamblePath}: every composed document includes this file, so the baseline cannot be ` +
+        `composed without it. This vendored baseline is incomplete.`,
+      );
+    }
+    throw err;
+  }
 
   files.set(DEVIATIONS_PATH, tidy(renderRegister(banner, baselineVersion, docs)));
-  files.set(PREAMBLE_FILE, baseline_preamble)
+  files.set(PREAMBLE_FILE, baselinePreamble);
 
   const { assets: baselineAssets, warnings: baselineAssetWarnings } = walkAssets(
     join(baseline.dir, COMPOSED_DIR),
