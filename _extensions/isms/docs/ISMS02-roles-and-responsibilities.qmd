@@ -1,7 +1,7 @@
 ---
 isms-id: ISMS02
 title: "ISMS02 - Roles and Responsibilities"
-filename: ISMS02-roles-and-responsibilities.qmd
+filename: ISMS02-roles-and-responsibilities
 document-author: Policy Owner
 classification: public
 version: 5.2
@@ -14,7 +14,7 @@ approval:
   date: 12/03/2025
 sources: |
   [SLMS-IG05](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG05%20IG%20Lead%20Role.docx),
-  [SLMS-IG07](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG07%20IG%20Officer%20Role.doc)
+  [SLMS-IG07](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG07%20IG%20Officer%20Role.doc),
   [SLMS-IG16](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG16%20Training%20Policy.docx),
   [SLMS-IG32](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG32%20IG%20Framework%20Roles%20and%20Responsibilities.docx)
 baseline-doc-version: "1.0"
@@ -26,9 +26,9 @@ provenance: >
 
 {{< include _preamble.qmd >}}
 
-## Document Overview {#sec-overview}
-
 <!-- isms:begin id=overview -->
+
+## Document Overview {#sec-overview}
 
 This document establishes the framework for defining roles, responsibilities, and authorities within
 the {{< var organisation >}} {{< var isms_name >}} (’the {{< var isms_abbr >}}’). It also outlines
@@ -58,13 +58,13 @@ This document covers:
 
 <!-- isms:end id=overview -->
 
-## Scope of the roles and responsibilities {#sec-scope}
-
 <!-- isms:begin id=scope hint="Name the groups, functions and roles within your institution's scope." -->
 
+## Scope of the roles and responsibilities {#sec-scope}
+
 This document applies to all groups and group members within the scope detailed in the
-[Research Data ISMS Scope](./ISMS01-Scope), including researchers, governance groups, IT service
-delivery teams and {{< var organisation >}}-wide functions.
+{{< var isms_abbr >}} scope document, including researchers, governance groups, IT service delivery
+teams and {{< var organisation >}}-wide functions.
 
 This document also outlines the framework for determining the appropriate resources and competencies
 that are to be available to, or possessed by, the members of each of the above groups, enabling them
@@ -72,97 +72,101 @@ to establish, implement, maintain, and continually improve the {{< var isms_abbr
 
 <!-- isms:end id=scope -->
 
-## The Information Governance Framework {#sec-framework}
-
 <!-- isms:begin id=framework -->
 
-The high-level structure of the ISMS’s Information Governance Framework is represented in the
-diagram below.
+## The Information Governance Framework {#sec-framework}
+
+The high-level structure of the {{< var isms_abbr >}}'s Information Governance Framework is
+represented in the diagram below.
 
 ![Information Governance Framework](./images/IG_Framework.drawio.svg)
 
-### Top Management
-
 <!-- isms:begin id=framework.top-management hint="Describe your institution's top management structure and its reporting line (e.g. board, executive sponsor, risk committee)." -->
 
-The ISMS Top Management consists of UCL’s Senior Information Risk Owner (SIRO) and the Information
-Risk Governance Committee (IRGC), chaired by the SIRO. The SIRO is a UCL executive and reports to
-the University Management Committee (UMC), providing a direct reporting line from the ISMS to UCL's
-primary body responsible for operational management, which oversees institute strategy, risk
-management, and key policies. The SIRO receives assurance that relevant processes, procedures and
-policies are in place to protect UCL’s information assets. The IRGC receives reports from the
-Operational Management Group (OMG), holds them to account, and in turn provides advice and
-assurances to the SIRO.
+### Top Management {#sec-framework-top-management}
 
-Full details of IRGC membership and responsibilities can be found in the
-[UCL Information Risk Governance Committee Terms of Reference](https://www.ucl.ac.uk/about/leadership/governance/committees/umc-and-committees/information-risk-governance-committee).
+The {{< var isms_abbr >}} Top Management consists of {{< var organisation >}}'s
+{{< var roles.senior_risk_owner >}} and the {{< var roles.top_management_body >}}, chaired by the
+{{< var roles.senior_risk_owner >}}. The {{< var roles.senior_risk_owner >}} is a member of
+{{< var organisation >}}'s executive and reports to the {{< var roles.executive_body >}}, providing
+a direct reporting line from the {{< var isms_abbr >}} to {{< var organisation >}}'s primary body
+responsible for operational management, which oversees institutional strategy, risk management, and
+key policies. The {{< var roles.senior_risk_owner >}} receives assurance that relevant processes,
+procedures and policies are in place to protect {{< var organisation >}}'s information assets. The
+{{< var roles.top_management_body >}} receives reports from the {{< var roles.governance_body >}},
+holds it to account, and in turn provides advice and assurance to the
+{{< var roles.senior_risk_owner >}}.
 
-Full details of UCL’s formal committees can be found on the
-[Committees webpage](https://www.ucl.ac.uk/about/leadership/governance/committees).
+Full details of the {{< var roles.top_management_body >}}'s membership and responsibilities are set
+out in its terms of reference.
+
+Full details of {{< var organisation >}}'s formal committees are published on its governance pages.
 
 <!-- isms:end id=framework.top-management -->
 
-### Operational Management Group (OMG)
+<!-- isms:begin id=framework.governance-body hint="Describe your institution's operational governance group and how its membership is drawn." -->
 
-<!-- isms:begin id=framework.omg hint="Describe your institution's operational governance group and how its membership is drawn." -->
+### {{< var roles.governance_body >}} {#sec-framework-governance-body}
 
-The OMG reports to the IRGC to assure that the ISMS is operating effectively, delivering information
-security objectives and managing information risks within tolerance. While the OMG is responsible
-for ISMS policies, it may escalate risks to IRGC that cannot be resolved directly by the OMG. Risk
-decisions are therefore ultimately owned by the IRGC.
+The {{< var roles.governance_body >}} reports to the {{< var roles.top_management_body >}} to assure
+that the {{< var isms_abbr >}} is operating effectively, delivering information security objectives
+and managing information risks within tolerance. While the {{< var roles.governance_body >}} is
+responsible for {{< var isms_abbr >}} policies, it may escalate risks to the
+{{< var roles.top_management_body >}} that cannot be resolved directly. Risk decisions are therefore
+ultimately owned by the {{< var roles.top_management_body >}}.
 
-The OMG is composed of members of the ISMS’s governance, technical, and service teams. Full details
-of membership and responsibilities of individual roles can be found in the
-[OMG Terms of Reference](./RISM11-Operational_Management_Group_ToR.md).
+The {{< var roles.governance_body >}} is composed of members of the {{< var isms_abbr >}}'s
+governance, technical, and service teams. Full details of membership and responsibilities of
+individual roles are set out in its terms of reference.
 
-The Trusted Research Environments (TREs) (as defined in the
-[classification and tiering policy](./RISM06-Data_Classification_and_Environment_Tiering_Policy.md))
-that form part of the scope and are managed by the UCL Information Services Division (ISD) and the
-Centre for Advanced Research Computing (ARC). They are represented at the OMG to ensure these
-Environments are operating safely.
+The {{< var environment_name >}}s (as defined in the classification and tiering policy) that form
+part of the scope are managed by {{< var roles.infrastructure_provider >}}. They are represented at
+the {{< var roles.governance_body >}} to ensure these environments are operating safely.
 
-<!-- isms:end id=framework.omg -->
+<!-- isms:end id=framework.governance-body -->
 
 <!-- isms:end id=framework -->
 
+<!-- isms:begin id=resources hint="Describe how your institution funds and resources the ISMS and its environments." -->
+
 ## Resources {#sec-resources}
 
-<!-- isms:begin id=resources -->
-
-Funding for ISMS and all technical environments (TREs) is provided by the UCL
-[Change and Digital Committee structure](https://www.ucl.ac.uk/governance-compliance/committees/change-and-digital-committee).
-Top management requests funding from the Change and Digital Committee in the form of business cases.
-Top Management ensures sufficient resources are available. Where resource constraints pose risks to
-the organisation, top management escalates to UMC.
+Funding for the {{< var isms_abbr >}} and all {{< var environment_name >}}s is provided through
+{{< var organisation >}}'s {{< var roles.funding_body >}} structure. Top management requests funding
+from the {{< var roles.funding_body >}} in the form of business cases. Top management ensures
+sufficient resources are available. Where resource constraints pose risks to the organisation, top
+management escalates to the {{< var roles.executive_body >}}.
 
 <!-- isms:end id=resources -->
 
+<!-- isms:begin id=competence hint="Describe how your institution assures and maintains staff and researcher competence." -->
+
 ## Competence {#sec-competence}
 
-<!-- isms:begin id=competence -->
+{{< var organisation >}} determines the necessary competence of persons doing work under its control
+that affects its information security performance, including staff, suppliers, and researchers, and
+ensures they are competent to perform this work.
 
-UCL determines the necessary competence of persons doing work under its control that affects its
-information security performance, including staff, suppliers, and researchers, and ensures they are
-competent to perform this work.
-
-Staff competence and suitability are determined as part of the
-[recruitment and selection procedure](https://www.ucl.ac.uk/human-resources/recruitment-and-selection-procedure).
+Staff competence and suitability are determined as part of {{< var organisation >}}'s recruitment
+and selection procedure.
 
 All users must complete suitable information governance training. This training must be kept up to
-date; failure to do so may result in losing access to the Trusted Research Environments. A list of
+date; failure to do so may result in losing access to the {{< var environment_name >}}s. A list of
 acceptable training courses can be found in Annex A, and the required competence for each role is
 detailed in the roles catalogue.
 
 The training listed in the roles catalogue below is determined through a training needs analysis.
-Approved researcher training ensures it meets the requirements of our key data providers, such as
-the NHS. UCL-wide training is mandatory and designed by the UCL Information Security Group to meet
-the requirements of UCL’s obligations to data subjects.
+Approved researcher training is designed to meet applicable external information governance
+assurance regimes and the requirements of the institution's data providers.
+{{< var organisation >}}-wide training is mandatory and designed by the
+{{< var roles.security_function >}} to meet the requirements of {{< var organisation >}}'s
+obligations to data subjects.
 
 <!-- isms:end id=competence -->
 
-## Shared Responsibility Model {#sec-model}
-
 <!-- isms:begin id=model -->
+
+## Shared Responsibility Model {#sec-model}
 
 Security and compliance are shared responsibilities among infrastructure providers, environment
 providers, research teams, and data stewards. The model below provides an overview of how these
@@ -172,74 +176,74 @@ responsibilities are allocated.
 
 <!-- isms:end id=model -->
 
-## Approved Researcher, Study and Project Roles {#sec-roles}
-
 <!-- isms:begin id=roles -->
 
-Users of the TREs are authorised through the following structure and per the
-[Access Control Policy](RISM03-Access_Control_Policy.md)
+## Approved Researcher, Study and Project Roles {#sec-roles}
 
-| Term        | Definition                                                                                                                                                                                                                                                                                                                                          |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Study**   | A study is an Information Governance construct and exists to manage the risk and ownership of specific data.<br><br>**Each study has an Information Asset Owner that owns that study.** The Information Asset Owner can create one or more project spaces attached to that study.                                                                   |
-| **Project** | A Project is a permissions boundary within a technical environment. This is where the whole or a subset of the parent study’s data is stored and processed by members of the research team.<br><br>Access to data within a project is managed through permissions determined by the Information Asset Owner or the Information Asset Administrator. |
+Users of {{< var environment_name >}}s are authorised through the following structure and per the
+[Access Control Policy](./ISMS03-access-control-policy.qmd)
 
-### Approved Researcher Role
+| Term        | Definition                                                                                                                                                                                                                                                                                                                                                      |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Study**   | A study is an Information Governance construct and exists to manage the risk and ownership of specific data.<br><br>**Each study has an {{< var roles.asset_owner >}} that owns that study.** The {{< var roles.asset_owner >}} can create one or more project spaces attached to that study.                                                                   |
+| **Project** | A Project is a permissions boundary within a technical environment. This is where the whole or a subset of the parent study’s data is stored and processed by members of the research team.<br><br>Access to data within a project is managed through permissions determined by the {{< var roles.asset_owner >}} or the {{< var roles.asset_administrator >}}. |
 
 <!-- isms:begin id=roles.approved-researcher -->
 
-Approved researcher roles have no access to data by default within any project, Approved researchers
-can apply to create Studies (see below) or access projects. An approved researcher must provide
-evidence that they have up-to-date approved information governance training and sign an
-[approved researcher agreement](./Agreement_Templates/RISM14-Approved_Researcher_Agreement.md).
+### Approved Researcher Role {#sec-roles-approved-researcher}
 
-An approved researcher must be covered by a legal agreement, for example, a staff contract (for UCL
-staff) or a research contract (for external collaborators).
+Approved researcher roles have no access to data by default within any project. Approved researchers
+can apply to create studies (see below) or access projects. An approved researcher must provide
+evidence that they have up-to-date approved information governance training and sign the approved
+researcher agreement.
+
+An approved researcher must be covered by a legal agreement, for example, a staff contract (for
+{{< var organisation >}} staff) or a research contract (for external collaborators).
 
 <!-- isms:end id=roles.approved-researcher -->
 
-### Study Roles
-
 <!-- isms:begin id=roles.study -->
+
+### Study Roles {#sec-roles-study}
 
 Study roles have no access to data within projects by default.
 
-At the study level, users can be assigned the role of an Information Asset Owner, who is responsible
-for owning a 'study'.
+At the study level, users can be assigned the role of an {{< var roles.asset_owner >}}, who is
+responsible for owning a 'study'.
 
-The Information Asset Owner is accountable for any confidential information processed by
-[project users](./RISM02-Roles_and_Responsibilities.md#73project-roles) and is accountable for the
-safe use of that information. An Information Asset Owner must sign and comply with the
-responsibilities detailed in the [Study Agreement](./Agreement_Templates/RISM15-Study_Agreement.md).
+The {{< var roles.asset_owner >}} is accountable for any confidential information processed by
+[project users](#sec-roles-project) and is accountable for the safe use of that information. An
+{{< var roles.asset_owner >}} must sign and comply with the responsibilities detailed in the study
+agreement.
 
-An Information Asset Owner may delegate responsibility (while retaining overall accountability) for
-the day-to-day management of users and projects to an Information Asset Administrator. Information
-Asset Administrator responsibilities as detailed in the
-[roles catalogue](RISM02-Roles_and_Responsibilities.md#8roles-catalogue).
+An {{< var roles.asset_owner >}} may delegate responsibility (while retaining overall
+accountability) for the day-to-day management of users and projects to an
+{{< var roles.asset_administrator >}}. {{< var roles.asset_administrator >}} responsibilities are
+detailed in the [roles catalogue](#sec-roles-catalogue).
 
-Information Asset Owners and Information Asset Administrators must be both substantive (full)
-members of UCL staff and approved researchers.
+{{< var roles.asset_owner >}}s and {{< var roles.asset_administrator >}}s must be substantive (full)
+members of {{< var organisation >}} staff and approved researchers.
 
 <!-- isms:end id=roles.study -->
 
-### Project Roles
-
 <!-- isms:begin id=roles.project -->
 
-Project roles have access to data within projects as approved by the Information Asset Owner or
-Information Asset Administrator.
+### Project Roles {#sec-roles-project}
+
+Project roles have access to data within projects as approved by the {{< var roles.asset_owner >}}
+or {{< var roles.asset_administrator >}}.
 
 A project is a permissions boundary inside which data is stored and processed. All project users
-must be provided access to that specific project by the Information Asset Owner or Information Asset
-Administrator.
+must be provided access to that specific project by the {{< var roles.asset_owner >}} or
+{{< var roles.asset_administrator >}}.
 
-Users of a TRE will only be granted access once they have been designated an
-[“Approved Researcher”](RISM02-Roles_and_Responsibilities.md/#71approved-researcher-role) and can be
-members of UCL staff, students, visitors or external collaborators.
+Users of a {{< var environment_name >}} will only be granted access once they have been designated
+an [“Approved Researcher”](#sec-roles-approved-researcher) and can be members of
+{{< var organisation >}} staff, students, visitors or external collaborators.
 
-Users may have different permissions within a project assigned by the Information Asset Owner or the
-Information Asset Administrator. For example, some users will have write access to data, while
-others may be limited to read-only access.
+Users may have different permissions within a project assigned by the {{< var roles.asset_owner >}}
+or the {{< var roles.asset_administrator >}}. For example, some users will have write access to
+data, while others may be limited to read-only access.
 
 All study and project users are encouraged to participate as members of the research community,
 raising issues and requesting improvements to the environment.
@@ -248,64 +252,100 @@ raising issues and requesting improvements to the environment.
 
 <!-- isms:end id=roles -->
 
-## Roles Catalogue {#sec-roles-catalogue}
-
 <!-- isms:begin id=roles-catalogue -->
 
-| User Roles                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                                                                                                                                                                                          |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Role**                        | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | **Competency and Awareness Requirement**                                                                                                                                                                 |
-| Approved Researcher             | A "safe" person. Defined by contracts, attestations and competency (training).<br>Must complete training and sign an approved researcher agreement which sets out responsibilities                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Approved researcher training<br><br>Complete [approved researcher agreement](./Agreement_Templates/RISM14-Approved_Researcher_Agreement.md)<br><br>Read and understand relevant policies and procedures. |
-| Information Asset Owner         | The Information Asset Owner is accountable for any confidential information processed by project users (see below) and for ensuring the safe use of that information. An Information Asset Owner must sign a [study agreement](./Agreement_Templates/RISM15-Study_Agreement.md).<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Be an approved researcher<br><br>Complete [study agreement](./Agreement_Templates/RISM15-Study_Agreement.md).                                                                                            |
-| Information Asset Administrator | Be responsible for the day-to-day management of users and act with delegated authority from an Information Asset Owner.<br><br>Information Asset Administrator responsibilities can be found [here](./Agreement_Templates/RISM19-Information_Asset_Administrator_Agreement.md).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Be an approved researcher. <br><br>Read and understand [Information Asset Administrator responsibilities](./Agreement_Templates/RISM19-Information_Asset_Administrator_Agreement.md)                     |
-| Project User                    | Project users have access to some or all data within the boundaries of a project within an environment.<br><br> Responsibilities for all project users are set out in the [approved researcher agreement](./Agreement_Templates/RISM14-Approved_Researcher_Agreement.md) and any specific requirements of that project related to handling of the data within that project as set out by the Information Asset Owner. <br><br>Project users can be further subdivided to provide different access within a project. Some examples below:<br>+ Project writer - Can read and write data to shared resources within a specific project<br>+ Project read only - Can read data from shared resources within a specific project<br>+ Project egresser - Can egress "safe" outputs data from a specific TRE project | Be an approved researcher                                                                                                                                                                                |
-| Project Ingress User            | A person approved to ingress data to a specific TRE project. This role does not require the approved researcher role and does not have access to any data within the environment, and ingress access can be approved by any project user (via Invite).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | None                                                                                                                                                                                                     |
+## Roles Catalogue {#sec-roles-catalogue}
 
-| Management                                   |                                                                                                                                                                                                                                                                                                                                                    |                                          |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Role**                                     | **Responsibilities**                                                                                                                                                                                                                                                                                                                               | **Competency and Awareness Requirement** |
-| University Management Committee (UMC)        | Oversight of UCL and responsible for setting risk appetite/tolerance. Terms of Reference:<br>[Terms of Reference](https://www.ucl.ac.uk/governance-compliance/university-management-committee/university-management-committee-terms-reference)                                                                                                     | NA                                       |
-| UCL Senior Information Risk Owner (SIRO)     | As part of the Information Risk and Governance Committee, the SIRO understands how information risks may impact the strategic academic goals of the organisation and takes ownership of the Research Information Governance Policy. The responsibilities of the SIRO are detailed [here](./Role_Responsibilities/RISM02d-SIRO_Responsibilities.md) | SIRO Training                            |
-| Information Risk Governance Committee (IRGC) | Receives reports from the Operational Management Group, provides advice and assurances to the SIRO and serves as "Top Management" for the Research Data ISMS.<br>[Terms of Reference](https://www.ucl.ac.uk/about/leadership/governance/committees/umc-and-committees/information-risk-governance-committee)                                       | Members must read and understand ToR     |
-| Operational Management Group (OMG)           | Ensures that effective and informed decisions are made about the operation of the UCL’s Research Data ISMS and that evidence of this is reported to the IRGC. OMG may also escalate risks to IRGC that cannot be resolved by the Group.<br>[Terms of Reference](RISM11-Operational_Management_Group_ToR.md)                                        | Members must read and understand ToR     |
+<!-- isms:begin id=roles-catalogue.user hint="List the roles your researchers and data users hold, and their responsibilities and competency requirements." -->
 
-| Governance                                                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                                             |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **Role**                                                       | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                         | **Competency and Awareness Requirement**                                    |
-| Research Information Governance (IG) Lead                      | Responsibility for the managerial operation of the UCL Research Data ISMS, Information Governance (IG) Framework, and compliance with the NHS Data Security & Protection (DSP) Toolkit. Provides expertise to and liaises between the SIRO and research teams. Acts as the primary IG contact for all external parties and as a point of escalation for IG matters within UCL.<br>[IG Lead Role Description](./Role_Responsibilities/RISM02b-Information_Governance_Lead.md) | As detailed as part of recruitment in Job Description, Advert and Interview |
-| Information Governance Officer (IG Service Operations Manager) | Operational responsibility for the Research Data ISMS, including but not limited to the maintenance of associated records and the provision of IG training.<br>[IG Officer role Description](./Role_Responsibilities/RISM02a-IG_Officer.md)                                                                                                                                                                                                                                  | As detailed as part of recruitment in Job Description, Advert and Interview |
-| Internal Auditor                                               | The UCL’s ISMS internal auditor is independent of the ISMS team and is responsible for assessing and reporting on all controls and parts of the standard within the 3-year certification cycle. Internal audits also extend to research teams’ compliance with the standard.                                                                                                                                                                                                 | Suitable ISO27001 auditor training                                          |
+### User Roles {#sec-roles-catalogue-user}
 
-| Technical and Service     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |                                          |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Role**                  | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | **Competency and Awareness Requirement** |
-| Environment Owner         | **Environment owner must:**<br>+ Be accountable for the safe development and operation of the trusted research environment they own.<br>+ Describe and maintain the definition of the trusted research environment they own<br> + Be accountable for maintaining the technical controls of the environment<br> + Ensure changes to the technical environment are made safely<br> + Lead on root cause analysis and incident response<br> + Represent the environment during audit<br> + Act in accordance with the responsibilities of a standard product/platform/service owner in ISD/ARC<br> + Approve access to infrastructure management for all environment IT Administrators | Approved Researcher Training             |
-| Environment Administrator | **An environment administrator must:**<br> + Be responsible for the safe development and operation of the trusted research environment they administer.<br> + Maintain design and operational documentation around the environment<br> + Be responsible for maintaining the technical controls of the environment<br> + Participate in root cause analysis and incident response<br> + Review and approve contributions from developers                                                                                                                                                                                                                                             | Approved Researcher Training             |
-| Environment Developer     | **An environment developer must:**<br> + Contribute to the safe development and operation of the trusted research environment they develop.<br> + Implement safe coding practices                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | None                                     |
-| Supporting Service Owner  | Where the environment relies on supporting services. The supporting service owner is accountable for the safe running of any supporting component service, such as physical hosting. These will be detailed within the Environment Definition Document.                                                                                                                                                                                                                                                                                                                                                                                                                             | None                                     |
+| User Roles                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |                                                                                                                                             |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Role**                              | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | **Competency and Awareness Requirement**                                                                                                    |
+| Approved Researcher                   | A "safe" person. Defined by contracts, attestations and competency (training).<br>Must complete training and sign an approved researcher agreement which sets out responsibilities                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Approved researcher training<br><br>Complete the approved researcher agreement<br><br>Read and understand relevant policies and procedures. |
+| {{< var roles.asset_owner >}}         | The {{< var roles.asset_owner >}} is accountable for any confidential information processed by project users (see below) and for ensuring the safe use of that information. An {{< var roles.asset_owner >}} must sign the study agreement.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Be an approved researcher<br><br>Sign the study agreement.                                                                                  |
+| {{< var roles.asset_administrator >}} | Be responsible for the day-to-day management of users and act with delegated authority from an {{< var roles.asset_owner >}}.<br><br>{{< var roles.asset_administrator >}} responsibilities are set out in the information asset administrator agreement.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Be an approved researcher.<br><br>Read and understand the information asset administrator responsibilities.                                 |
+| Project User                          | Project users have access to some or all data within the boundaries of a project within an environment.<br><br>Responsibilities for all project users are set out in the approved researcher agreement and any specific requirements of that project related to handling of the data within that project as set out by the {{< var roles.asset_owner >}}.<br><br>Project users can be further subdivided to provide different access within a project. Some examples below:<br>+ Project writer - Can read and write data to shared resources within a specific project<br>+ Project read only - Can read data from shared resources within a specific project<br>+ Project egresser - Can egress "safe" outputs data from a specific {{< var environment_abbr >}} project | Be an approved researcher                                                                                                                   |
+| Project Ingress User                  | A person approved to ingress data to a specific {{< var environment_abbr >}} project. This role does not require the approved researcher role and does not have access to any data within the environment, and ingress access can be approved by any project user (via Invite).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | None                                                                                                                                        |
 
-| UCL Wide Roles                                                                                                      |                                                                                                                                                                                                                 |     |
-| ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| **Role**                                                                                                            | **Responsibilities**                                                                                                                                                                                            |
-| Chief Information Security Officer (CISO)                                                                           | Responsible for UCL’s corporate information security agenda. Advises and guides the SIRO on information security matters. Head of the [Information Security Group](https://www.ucl.ac.uk/information-security/) |
-| [Information Security Group](https://www.ucl.ac.uk/information-security/)                                           | Responsible for UCL’s overall stance on information security, including the information security policies, security incident management, and liaison with the police via Estates.                               |
-| Human Resources (HR)                                                                                                | HR is responsible for UCL’s policies and processes covering recruitment, screening, disciplinary action, and termination of employment.                                                                         |
-| [Change and Digital Committee](https://www.ucl.ac.uk/governance-compliance/committees/change-and-digital-committee) | Provides resources to maintain and develop the UCL Research Data ISMS and the trusted research environments and information systems.                                                                            |
-| [Data Protection Office](https://www.ucl.ac.uk/data-protection/)                                                    | Responsible for providing key information for all staff, students and researchers by ensuring UCL policy and codes of practice about data protection are implemented across all departments.                    |
+<!-- isms:end id=roles-catalogue.user -->
 
-| External Roles to UCL         |                                                                                                                                                                                                                                                         |     |
+<!-- isms:begin id=roles-catalogue.management hint="List your institution's management-level governance roles." -->
+
+### Management {#sec-roles-catalogue-management}
+
+| Management                            |                                                                                                                                                                                                                                                                                                                                                                                                    |                                                         |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Role**                              | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                               | **Competency and Awareness Requirement**                |
+| {{< var roles.executive_body >}}      | Oversight of {{< var organisation >}} and responsible for setting risk appetite and tolerance. See its terms of reference.                                                                                                                                                                                                                                                                         | NA                                                      |
+| {{< var roles.senior_risk_owner >}}   | As part of the {{< var roles.top_management_body >}}, the {{< var roles.senior_risk_owner >}} understands how information risks may impact the strategic academic goals of the organisation and takes ownership of the Research Information Governance Policy. Their responsibilities are set out separately.                                                                                      | {{< var roles.senior_risk_owner >}} training            |
+| {{< var roles.top_management_body >}} | Receives reports from the {{< var roles.governance_body >}}, provides advice and assurance to the {{< var roles.senior_risk_owner >}} and serves as top management for the {{< var isms_abbr >}}.<br>See its terms of reference.                                                                                                                                                                   | Members must read and understand the terms of reference |
+| {{< var roles.governance_body >}}     | Ensures that effective and informed decisions are made about the operation of {{< var organisation >}}'s {{< var isms_name >}} and that evidence of this is reported to the {{< var roles.top_management_body >}}. The {{< var roles.governance_body >}} may also escalate risks to the {{< var roles.top_management_body >}} that cannot be resolved by the group.<br>See its terms of reference. | Members must read and understand the terms of reference |
+
+<!-- isms:end id=roles-catalogue.management -->
+
+<!-- isms:begin id=roles-catalogue.governance hint="List your institution's information governance roles, such as IG leads and internal audit." -->
+
+### Governance {#sec-roles-catalogue-governance}
+
+| Governance                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Role**                       | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | **Competency and Awareness Requirement**                                        |
+| {{< var roles.ig_lead >}}      | Responsibility for the managerial operation of {{< var organisation >}}'s {{< var isms_name >}}, Information Governance framework, and compliance with applicable external information governance assurance regimes. Provides expertise to and liaises between the {{< var roles.senior_risk_owner >}} and research teams. Acts as the primary IG contact for all external parties and as a point of escalation for IG matters within {{< var organisation >}}.<br>Full details are set out in the IG Lead role description. | As detailed as part of recruitment in the job description, advert and interview |
+| Information Governance Officer | Operational responsibility for the {{< var isms_name >}}, including but not limited to the maintenance of associated records and the provision of IG training.<br>Full details are set out in the IG Officer role description.                                                                                                                                                                                                                                                                                               | As detailed as part of recruitment in the job description, advert and interview |
+| Internal Auditor               | {{< var organisation >}}'s {{< var isms_abbr >}} internal auditor is independent of the {{< var isms_abbr >}} team and is responsible for assessing and reporting on all controls and parts of the standard within the 3-year certification cycle. Internal audits also extend to research teams’ compliance with the standard.                                                                                                                                                                                              | Suitable ISO 27001 auditor training                                             |
+
+<!-- isms:end id=roles-catalogue.governance -->
+
+<!-- isms:begin id=roles-catalogue.technical hint="List the technical and service roles responsible for operating your environments." -->
+
+### Technical and Service {#sec-roles-catalogue-technical}
+
+| Technical and Service               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |                                          |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Role**                            | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | **Competency and Awareness Requirement** |
+| {{< var roles.environment_owner >}} | **{{< var roles.environment_owner >}} must:**<br>+ Be accountable for the safe development and operation of the {{< var environment_name >}} they own.<br>+ Describe and maintain the definition of the {{< var environment_name >}} they own<br>+ Be accountable for maintaining the technical controls of the environment<br>+ Ensure changes to the technical environment are made safely<br>+ Lead on root cause analysis and incident response<br>+ Represent the environment during audit<br>+ Act in accordance with the responsibilities of a standard product, platform or service owner within {{< var roles.infrastructure_provider >}}<br>+ Approve access to infrastructure management for all environment IT administrators | Approved Researcher Training             |
+| Environment Administrator           | **An environment administrator must:**<br>+ Be responsible for the safe development and operation of the {{< var environment_name >}} they administer.<br>+ Maintain design and operational documentation around the environment<br>+ Be responsible for maintaining the technical controls of the environment<br>+ Participate in root cause analysis and incident response<br>+ Review and approve contributions from developers                                                                                                                                                                                                                                                                                                        | Approved Researcher Training             |
+| Environment Developer               | **An environment developer must:**<br>+ Contribute to the safe development and operation of the {{< var environment_name >}} they develop.<br>+ Implement safe coding practices                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | None                                     |
+| Supporting Service Owner            | Where the environment relies on supporting services, the supporting service owner is accountable for the safe running of any supporting component service, such as physical hosting. These will be detailed within the Environment Definition Document.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | None                                     |
+
+<!-- isms:end id=roles-catalogue.technical -->
+
+<!-- isms:begin id=roles-catalogue.organisation-wide hint="List the roles and functions that operate across your institution rather than within the ISMS itself." -->
+
+### Organisation-wide Roles {#sec-roles-catalogue-organisation-wide}
+
+| Organisation-wide Roles                    |                                                                                                                                                                                                                                |     |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
+| **Role**                                   | **Responsibilities**                                                                                                                                                                                                           |
+| Chief Information Security Officer (CISO)  | Responsible for {{< var organisation >}}'s corporate information security agenda. Advises and guides the {{< var roles.senior_risk_owner >}} on information security matters. Head of the {{< var roles.security_function >}}. |
+| {{< var roles.security_function >}}        | Responsible for {{< var organisation >}}'s overall stance on information security, including information security policies, security incident management, and liaison with law enforcement where required.                     |
+| Human Resources (HR)                       | HR is responsible for {{< var organisation >}}'s policies and processes covering recruitment, screening, disciplinary action, and termination of employment.                                                                   |
+| {{< var roles.funding_body >}}             | Provides resources to maintain and develop {{< var organisation >}}'s {{< var isms_name >}} and the {{< var environment_name >}}s and information systems.                                                                     |
+| {{< var roles.data_protection_function >}} | Responsible for providing key information for all staff, students and researchers by ensuring {{< var organisation >}}'s policies and codes of practice about data protection are implemented across all departments.          |
+
+<!-- isms:end id=roles-catalogue.organisation-wide -->
+
+<!-- isms:begin id=roles-catalogue.external hint="List external roles and suppliers relevant to your environments." -->
+
+### External Roles {#sec-roles-catalogue-external}
+
+| External Roles                |                                                                                                                                                                                                                                                         |     |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | **Role**                      | **Responsibilities**                                                                                                                                                                                                                                    |
 | External platform providers   | Responsible for the provision of storage, compute, and any associated software as a service, as defined in the environment definition of a trusted research environment.<br>Comply with controls committed to in contract or through written agreement. |
 | Technical equipment suppliers | Responsible for providing updates to software/firmware and for complying with contractual requirements.                                                                                                                                                 |
 
-### Annex A - Suitable Training Resources
+<!-- isms:end id=roles-catalogue.external -->
 
 <!-- isms:begin id=roles-catalogue.annex-a hint="List your institution's approved information governance training courses." -->
 
-| Role                | Training                            | Link                        |
-| ------------------- | ----------------------------------- | --------------------------- |
-| Approved Researcher | NHS Digital Data Security Awareness | https://portal.e-lfh.org.uk |
+### Annex A - Suitable Training Resources {#sec-roles-catalogue-annex-a}
+
+| Role                | Training                                                    | Link                                             |
+| ------------------- | ----------------------------------------------------------- | ------------------------------------------------ |
+| Approved Researcher | Data security and information governance awareness training | Provided by your institution's training platform |
 
 <!-- isms:end id=roles-catalogue.annex-a -->
 

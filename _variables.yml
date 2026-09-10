@@ -6,8 +6,16 @@ isms_abbr: ISMS
 review:
   access_review_period: 12 months
 roles:
+  asset_administrator: Information Asset Administrator
   asset_owner: Information Asset Owner
+  data_protection_function: Data Protection Office
   environment_owner: TRE Environment Owner
+  executive_body: Executive Committee
+  funding_body: Funding Committee
   governance_body: Operational Management Group
   ig_lead: Head of Research Data Governance
+  infrastructure_provider: IT Services
+  security_function: Information Security Team
+  senior_risk_owner: Senior Information Risk Owner
   service_owner: Service Owner
+  top_management_body: Information Risk Governance Committee

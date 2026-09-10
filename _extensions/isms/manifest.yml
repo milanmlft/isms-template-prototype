@@ -13,7 +13,7 @@ documents:
       - scope
       - framework
       - framework.top-management
-      - framework.omg
+      - framework.governance-body
       - resources
       - competence
       - model
@@ -22,6 +22,12 @@ documents:
       - roles.study
       - roles.project
       - roles-catalogue
+      - roles-catalogue.user
+      - roles-catalogue.management
+      - roles-catalogue.governance
+      - roles-catalogue.technical
+      - roles-catalogue.organisation-wide
+      - roles-catalogue.external
       - roles-catalogue.annex-a
 
   - id: ISMS03
