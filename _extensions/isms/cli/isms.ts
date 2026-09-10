@@ -61,7 +61,10 @@ function prune(root: string, keep: Set<string>): { removed: string[]; warnings: 
   // can remove it; that is only knowable bottom-up.
   const sweep = (rel: string): boolean => {
     let empty = true;
-    for (const e of Deno.readDirSync(join(root, rel))) {
+    // Snapshot first: removing entries while readDirSync is still iterating the same directory
+    // can skip the entry right after the one just removed, which would leave a stale file behind
+    // and make the empty-directory removal below throw.
+    for (const e of [...Deno.readDirSync(join(root, rel))]) {
       const childRel = join(rel, e.name);
       if (e.isDirectory) {
         if (!sweep(childRel)) { empty = false; continue; }
