@@ -136,6 +136,12 @@ shows that anything changed. Treat an asset referenced from an approved override
 approval only as long as its bytes are unchanged; a content swap needs its own review, which this
 pipeline does not currently prompt for.
 
+The fill-in-the-blank case above has the same gap from the other side. An institution can supply a
+file at a path the baseline references but does not ship — deliberately not a collision — but no
+override ran to put it there, so there is no `reason`/`approved-by`/`approved-date` and no line in
+the deviations register. The composed document silently contains institution-supplied content that
+the register reports as adopted verbatim.
+
 ## Customising: variables
 
 The first line of defence is `_variables.yml`, referenced from policy text as Quarto variable
