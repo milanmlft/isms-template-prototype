@@ -2,7 +2,7 @@
 isms-id: ISMS03
 title: "ISMS03 - Access Control Policy"
 filename: ISMS03-access-control-policy
-author: Tim Machin
+document-author: Tim Machin
 classification: public
 version: 4.1
 review:

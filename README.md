@@ -278,7 +278,8 @@ Rules the parser enforces:
 
 - Never hardcode institution specifics; use variable shortcodes (see above).
 - Front matter: `isms-id`, `title` (`"ISMS03 - Access Control Policy"`), `baseline-doc-version`,
-  `number-sections: true`.
+  `document-author` (not `author` — Quarto special-cases that key and renders its own title-block
+  byline in addition to the one `docs/_preamble.qmd` already renders), `number-sections: true`.
 - Give sections explicit `{#sec-...}` anchors so cross-document links stay stable.
 - Register every new document in `manifest.yml` — the manifest, not the filesystem, decides what is
   composed.

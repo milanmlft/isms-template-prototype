@@ -177,7 +177,9 @@ differs, so a clock value would mean git churn and a changed Quarto input on eve
 - Never hardcode institution specifics. Use `{{< var organisation >}}`,
   `{{< var environment_name >}}`, `{{< var roles.ig_lead >}}` etc., backed by `_variables.yml`.
 - Front matter conventions in existing docs: `isms-id`, `title` (`"ISMS03 - Access Control
-  Policy"`), `baseline-doc-version`, `number-sections: true`.
+  Policy"`), `baseline-doc-version`, `document-author` (not `author` — Quarto special-cases that
+  key and renders its own title-block byline in addition to the one `docs/_preamble.qmd` already
+  renders), `number-sections: true`.
 - Sections carry explicit `{#sec-...}` anchors so cross-document links stay stable.
 - Register every new document in `manifest.yml` (`id`, `file`, `title`, `blocks`) — the manifest,
   not the filesystem, decides what is composed.

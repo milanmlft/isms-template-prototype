@@ -2,7 +2,7 @@
 isms-id: ISMS08
 title: "ISMS08 - Change Management Policy"
 filename: ISMS08-change-management-policy
-author: Tim Machin
+document-author: Tim Machin
 classification: public
 version: 1.1
 review:

@@ -2,7 +2,7 @@
 
 **Classification:** {{< meta classification >}}
 
-**Author:** {{< meta author >}}
+**Author:** {{< meta document-author >}}
 
 **version:** {{< meta version >}}
 

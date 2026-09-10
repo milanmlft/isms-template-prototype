@@ -2,7 +2,7 @@
 isms-id: ISMS02
 title: "ISMS02 - Roles and Responsibilities"
 filename: ISMS02-roles-and-responsibilities.qmd
-author: Matthew Lilliman
+document-author: Matthew Lilliman
 classification: public
 version: 5.2
 review:
