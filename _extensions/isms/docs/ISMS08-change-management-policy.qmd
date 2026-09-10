@@ -38,8 +38,8 @@ services should also adhere to this policy.
 
 This policy applies to all departments, personnel, contractors, and third parties involved in the
 development, management, or modification of information systems, applications, and infrastructure
-with the scope of the Research Data Information Security Management System (ISMS). This includes but
-is not limited to changes affecting:
+with the scope of the {{< var isms_name >}} ({{< var isms_abbr >}}). This includes but is not
+limited to changes affecting:
 
 - Software
 - Documented information (including policy and procedures)
@@ -53,7 +53,7 @@ is not limited to changes affecting:
 ## Managing Change {#sec-managing}
 
 All changes should consider and document the following in a change record. Change records shall be
-retained and made available to the Operational Management Group on request:
+retained and made available to the {{< var roles.governance_body >}} on request:
 
 **1. Purpose**
 
@@ -103,7 +103,7 @@ Changes should be classified according to the following definitions. Each change
 documented approval chain:
 
 - **Standard Change:** A pre-defined, reproducible, repeatable change, for example the deployment of
-  a project within a TRE.
+  a project within a {{< var environment_abbr >}}.
 
 - **Emergency Change:** A change made to resolve or mitigate the effect of an incident.
 
