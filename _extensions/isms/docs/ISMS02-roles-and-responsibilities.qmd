@@ -74,12 +74,20 @@ to establish, implement, maintain, and continually improve the {{< var isms_abbr
 
 <!-- isms:begin id=framework -->
 
+<!-- isms:begin id=framework.intro -->
+
 ## The Information Governance Framework {#sec-framework}
 
 The high-level structure of the {{< var isms_abbr >}}'s Information Governance Framework is
 represented in the diagram below.
 
+<!-- isms:end id=framework.intro -->
+
+<!-- isms:begin id=framework.intro.image -->
+
 ![Information Governance Framework](./images/IG_Framework.drawio.svg)
+
+<!-- isms:end id=framework.intro.image -->
 
 <!-- isms:begin id=framework.top-management hint="Describe your institution's top management structure and its reporting line (e.g. board, executive sponsor, risk committee)." -->
 
@@ -172,11 +180,17 @@ Security and compliance are shared responsibilities among infrastructure provide
 providers, research teams, and data stewards. The model below provides an overview of how these
 responsibilities are allocated.
 
+<!-- isms:begin id=model.image -->
+
 ![Shared Responsibility Model](./images/Shared_Responsibility_Model.png)
+
+<!-- isms:end id=model.image -->
 
 <!-- isms:end id=model -->
 
 <!-- isms:begin id=roles -->
+
+<!-- isms:begin id=roles.intro -->
 
 ## Approved Researcher, Study and Project Roles {#sec-roles}
 
@@ -187,6 +201,8 @@ Users of {{< var environment_name >}}s are authorised through the following stru
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Study**   | A study is an Information Governance construct and exists to manage the risk and ownership of specific data.<br><br>**Each study has an {{< var roles.asset_owner >}} that owns that study.** The {{< var roles.asset_owner >}} can create one or more project spaces attached to that study.                                                                   |
 | **Project** | A Project is a permissions boundary within a technical environment. This is where the whole or a subset of the parent study’s data is stored and processed by members of the research team.<br><br>Access to data within a project is managed through permissions determined by the {{< var roles.asset_owner >}} or the {{< var roles.asset_administrator >}}. |
+
+<!-- isms:end id=roles.intro -->
 
 <!-- isms:begin id=roles.approved-researcher -->
 

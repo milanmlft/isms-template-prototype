@@ -12,12 +12,16 @@ documents:
       - overview
       - scope
       - framework
+      - framework.intro
+      - framework.intro.image
       - framework.top-management
       - framework.governance-body
       - resources
       - competence
       - model
+      - model.image
       - roles
+      - roles.intro
       - roles.approved-researcher
       - roles.study
       - roles.project
@@ -39,6 +43,7 @@ documents:
       - conventions
       - principles
       - user-access
+      - user-access.intro
       - user-access.approval-chain
       - user-access.review-cadence
       - authentication
