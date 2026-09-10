@@ -2,15 +2,15 @@
 isms-id: ISMS08
 title: "ISMS08 - Change Management Policy"
 filename: ISMS08-change-management-policy
-document-author: Tim Machin
+document-author: Policy Owner
 classification: public
 version: 1.1
 review:
-  reviewer: Victor Olago
+  reviewer: Policy Reviewer
   date: 10/02/2025
   period: 3 years
 approval:
-  approver: OMG
+  approver: Approval Body
   date: 12/03/2025
 sources: null
 baseline-doc-version: "1.0"

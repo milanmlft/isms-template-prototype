@@ -2,15 +2,15 @@
 isms-id: ISMS03
 title: "ISMS03 - Access Control Policy"
 filename: ISMS03-access-control-policy
-document-author: Tim Machin
+document-author: Policy Owner
 classification: public
 version: 4.1
 review:
-  reviewer: Finley Bacon
+  reviewer: Policy Reviewer
   date: 08/04/2025
   period: 3 years
 approval:
-  approver: OMG
+  approver: Approval Body
   date: 12/03/2025
 sources: 
   - "[SLMS-IG36](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG36%20Data%20Safe%20Haven%20Access%20Control%20Policy.docx)"
