@@ -13,7 +13,7 @@ approval:
   approver: Approval Body
   date: 12/03/2025
 sources: null
-baseline-doc-version: "1.0"
+baseline-doc-version: "2.0"
 number-sections: true
 provenance: >
   PROTOTYPE PLACEHOLDER TEXT. Written to exercise multi-document composition; not derived
