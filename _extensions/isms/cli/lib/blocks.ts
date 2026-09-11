@@ -301,9 +301,6 @@ export function parseOverrides(file: string, src: string): { frontMatter: string
     if (mode === "delete" && text.trim() !== "") {
       throw new ParseError(file, d.line, `mode=delete must have an empty body`);
     }
-    if (mode !== "delete" && text.trim() === "") {
-      throw new ParseError(file, d.line, `override "${d.attrs.id}" (mode=${mode}) has an empty body`);
-    }
     if (ops.has(d.attrs.id)) throw new ParseError(file, d.line, `duplicate override for "${d.attrs.id}"`);
     ops.set(d.attrs.id, {
       id: d.attrs.id,
