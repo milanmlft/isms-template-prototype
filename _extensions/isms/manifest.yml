@@ -45,6 +45,8 @@ documents:
     title: Access Control Policy
     blocks:
       - overview
+      - overview.intro
+      - overview.contents
       - scope
       - conventions
       - principles
