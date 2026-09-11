@@ -9,10 +9,13 @@ plus explicit, attributed overrides on named sections of the text. The rendered 
 from the two at build time, so an institution can pull a new baseline version without losing its
 local changes, and every locally-changed paragraph is traceable to the override that produced it.
 
+<!-- prettier-ignore-start -->
 > [!WARNING]
 > **Prototype.** The policy text in `_extensions/isms/docs/*.qmd` is placeholder content,
 > written to exercise the composition machinery. It is not derived from any institution's approved
 > policy and is not fit for adoption as-is.
+
+<!-- prettier-ignore-end -->
 
 ## Requirements
 
@@ -88,20 +91,56 @@ on every render. For each document in `manifest.yml` the CLI:
 
 1. parses the baseline `.qmd` into a tree of named blocks (`lib/blocks.ts`);
 2. loads `_overrides/<ID>.qmd` if it exists, and validates every override against that tree;
-3. re-emits front matter, a `DO NOT EDIT BY HAND` banner, and the body with overrides spliced in,
-   wrapping each block in a provenance comment;
+3. re-emits the front matter merged with any the override file sets, a `DO NOT EDIT BY HAND`
+   banner, and the body with overrides spliced in, wrapping each block in a provenance comment;
 4. records each override's governance metadata, and the section it landed in, for the register;
-5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** any `docs/*.qmd` not in the current
-   result set — so removing a document from the manifest removes its output.
+5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** anything under `docs/` not in the
+   current result set — so removing a document from the manifest removes its output.
 
 It then writes `deviations.qmd`, the register of everything the institution changed.
 
-`docs/` is therefore build output and is gitignored, as is `deviations.qmd`; the extension's
-sidebar picks the documents up via `auto: "docs/*.qmd"`. Edit the override file, never `docs/`.
+Non-`.qmd` files in the baseline `docs/` tree — images, diagram sources, anything a document
+references by relative path — are **mirrored** to the same relative position under the composed
+`docs/`, so `![…](./images/x.svg)` resolves the same way from the composed document as it does from
+the baseline source. There is nothing to declare: the convention is the whole rule.
+
+The same rule applies a second time, at `_overrides/`: any non-`.qmd` file there is mirrored to the
+same relative position under `docs/`, so `_overrides/images/org-chart.png` becomes
+`docs/images/org-chart.png` and an override's `![…](./images/org-chart.png)` resolves once spliced
+into the composed document. No new directory or config key — `_overrides/` is already the
+institution's half of the source tree. A file the institution ships at a path a baseline asset
+already occupies is a **hard error** naming both sources: letting either side silently win would
+substitute content inside a controlled document with no `reason`/`approved-by`/`approved-date` and
+no line in the deviations register. To replace a baseline diagram, override the block that
+references it and point at a new filename instead — that keeps the change governed. Naming a path
+the baseline _references but does not ship_ is fine; it is a fill-in-the-blank, not a collision —
+but it is a silent one: no override ran to fill it in, so nothing records that the resulting figure
+is institution-supplied rather than part of the baseline. See the governance limitation below.
+
+`docs/` is therefore build output and is gitignored, as is `deviations.qmd`; the extension's sidebar
+picks the documents up via `auto: "docs/*.qmd"`. Edit the override file, never `docs/`.
 
 Composition is fail-loud. A typo in a block ID, an override that could never reach the output, an
 unknown attribute, an unclosed block — all abort the render with a `file:line: message`, rather than
 silently dropping content that someone has formally approved.
+
+**Known governance limitations,** both about the gap between what the register can see and what the
+composed document actually contains:
+
+The collision check and the deviations register both operate on _paths_, not on asset _content_. An
+override's `reason`/`approved-by`/`approved-date` are recorded once, against the block that
+references an image; nothing re-checks or re-flags that block if the institution later replaces the
+referenced file's bytes without touching the override text that names it — the same governance
+metadata stays attached to different image content, and neither the register nor the render log
+shows that anything changed. Treat an asset referenced from an approved override as covered by that
+approval only as long as its bytes are unchanged; a content swap needs its own review, which this
+pipeline does not currently prompt for.
+
+The fill-in-the-blank case above has the same gap from the other side. An institution can supply a
+file at a path the baseline references but does not ship — deliberately not a collision — but no
+override ran to put it there, so there is no `reason`/`approved-by`/`approved-date` and no line in
+the deviations register. The composed document silently contains institution-supplied content that
+the register reports as adopted verbatim.
 
 ## Customising: variables
 
@@ -167,26 +206,66 @@ document: ISMS03
 metadata: they record _why_ the institution deviates and who signed it off. They are the input to
 the [deviations register](#the-deviations-register).
 
-All three are optional and their values are not validated. An override missing one still composes
-— it may be mid-approval — but the CLI warns with a `file:line`, and the register prints
+All three are optional and their values are not validated. An override missing one still composes —
+it may be mid-approval — but the CLI warns with a `file:line`, and the register prints
 `(not recorded)` rather than a dash, so a gap reads as a gap. Bear in mind that a `reason` is
 published prose: it is rendered on the register and indexed by the site search.
+
+### Front matter
+
+The override file's own front matter is your front matter. Every key except the reserved
+`document:` is merged into the composed document's, and `docs/_preamble.qmd` prints most of them
+at the top of the page — so this is how you replace the baseline's placeholder
+`document-author: Policy Owner` and `approver: Approval Body` with the real thing.
+
+```yaml
+---
+document: ISMS03
+document-author: Head of Research Data Governance
+classification: internal
+review:
+  reviewer: Information Security Team
+  date: 01/09/2026
+approval:
+  approver: Operational Management Group
+---
+```
+
+Mappings merge key by key, so the `review.period` you did not mention keeps its baseline value.
+Anything else — a scalar, a list, an explicit `null` — replaces the baseline value outright.
+
+Four keys are refused, and the render stops with a `file:line`:
+
+| Key                    | Why                                                                     |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `isms-id`              | it is the ID your overrides are keyed on                                |
+| `baseline-doc-version` | it records which baseline release the document was composed from        |
+| `filename`             | it names the composed file, which the manifest decides                  |
+| `author`               | Quarto renders it as a second byline — set `document-author` instead    |
+
+A key that is not in the baseline front matter is allowed but warns, because the likeliest cause
+is a typo in one that is. An unquoted `2026-07-14` is a date to YAML, not a string; it is
+normalised back to `2026-07-14` rather than published as a UTC timestamp.
+
+Front-matter changes are **not** deviations and get no row in the register: replacing a
+placeholder author with a real name is adopting the baseline, not departing from it. A file
+carrying only front-matter keys leaves its document listed as adopted verbatim.
 
 ### The deviations register
 
 `deviations.qmd` is generated at the project root on every render, and lists every override in the
-project: which document and block it targets, what kind of change it makes, the governance
-metadata, and the institution's local text. It is the only place a `mode=delete` is visible at all
-— a deleted block leaves nothing in the composed document but a comment — so the register quotes
-the baseline text that was removed.
+project: which document and block it targets, what kind of change it makes, the governance metadata,
+and the institution's local text. It is the only place a `mode=delete` is visible at all — a deleted
+block leaves nothing in the composed document but a comment — so the register quotes the baseline
+text that was removed.
 
 Each row links into the composed document at the section the change landed in. The anchor is
 resolved from the composed output rather than from the baseline, because a replace or a delete can
 take away the very heading a baseline-derived link would have pointed at; where an override leaves
 nothing to link to, the row links to the document instead.
 
-A project with no override files still gets a register, saying so. "Adopted verbatim" is evidence;
-a missing page is not.
+A project with no override files still gets a register, saying so. "Adopted verbatim" is evidence; a
+missing page is not.
 
 ### Provenance
 
@@ -239,7 +318,8 @@ Rules the parser enforces:
 
 - Never hardcode institution specifics; use variable shortcodes (see above).
 - Front matter: `isms-id`, `title` (`"ISMS03 - Access Control Policy"`), `baseline-doc-version`,
-  `number-sections: true`.
+  `document-author` (not `author` — Quarto special-cases that key and renders its own title-block
+  byline in addition to the one `docs/_preamble.qmd` already renders), `number-sections: true`.
 - Give sections explicit `{#sec-...}` anchors so cross-document links stay stable.
 - Register every new document in `manifest.yml` — the manifest, not the filesystem, decides what is
   composed.
@@ -267,26 +347,29 @@ _extensions/isms/
   _extension.yml       # Quarto contributions: project type, format, pre-render hook
   manifest.yml         # document registry + published block-ID surface
   docs/*.qmd           # authored baseline policy sources
+  docs/images/         # non-.qmd files here are mirrored into the composed docs/, whether referenced or not
   cli/
-    isms.ts            # entry point for quarto run and used as pre-render hook: compose, write changed files, prune stale ones
+    isms.ts            # entry point for quarto run and used as pre-render hook: compose, write changed files, copy changed assets, prune stale ones
     lib/project.ts     # loadProject() — reads the manifest
     lib/compose.ts     # per-document composition, override loading and validation
     lib/blocks.ts      # block grammar: parse and emit
     lib/deviations.ts  # the deviations register: anchor resolution and rendering
 _overrides/*.qmd       # institution-local overrides (tracked in version control)
+_overrides/**          # any other file here (not just under images/, at any depth) is an asset, mirrored into docs/ the same way
 docs/*.qmd             # composed output (generated, gitignored)
+docs/images/           # mirrored assets, baseline and institution alike (generated, gitignored)
 deviations.qmd         # the deviations register (generated, gitignored)
 ```
 
 ## Status and roadmap
 
-Working today: variables, the block grammar, all four override modes, override validation,
-provenance markers, composed-document pruning, the deviations register.
+Working today: variables, the block grammar, all four override modes, front-matter overrides,
+override validation, provenance markers, asset mirroring, composed-output pruning, the deviations
+register.
 
 Not yet built:
 
 - **Validation of `approved-date`.** The attribute is free text, so `14/07/2026` and `2026-07-14`
   can coexist in one register, unsortable.
-- **Front-matter overrides**, and appending institution-only sections outside the baseline block
-  set.
+- **Appending institution-only sections** outside the baseline block set.
 - **Manifest/source cross-validation** of the `blocks:` lists.

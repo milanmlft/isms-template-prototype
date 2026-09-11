@@ -1,0 +1,9 @@
+printWidth: 100
+proseWrap: "always"
+tabWidth: 2
+trailingComma: "es5"
+overrides:
+  # Format QMD files as MD files
+  - files: "**/*.qmd"
+    options:
+      parser: "markdown"

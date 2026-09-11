@@ -2,9 +2,38 @@
 # IDs and their suggested order. `blocks:` is the published block-ID surface: those IDs are
 # a public API, because downstream overrides target them by name. Removing or renaming one
 # is a MAJOR release.
-baseline_version: 0.2.0
+baseline_version: 0.4.0
 
 documents:
+  - id: ISMS02
+    file: docs/ISMS02-roles-and-responsibilities.qmd
+    title: Roles and Responsibilities
+    blocks:
+      - overview
+      - scope
+      - framework
+      - framework.intro
+      - framework.intro.image
+      - framework.top-management
+      - framework.governance-body
+      - resources
+      - competence
+      - model
+      - model.image
+      - roles
+      - roles.intro
+      - roles.approved-researcher
+      - roles.study
+      - roles.project
+      - roles-catalogue
+      - roles-catalogue.user
+      - roles-catalogue.management
+      - roles-catalogue.governance
+      - roles-catalogue.technical
+      - roles-catalogue.organisation-wide
+      - roles-catalogue.external
+      - roles-catalogue.annex-a
+
   - id: ISMS03
     file: docs/ISMS03-access-control-policy.qmd
     title: Access Control Policy
@@ -14,6 +43,7 @@ documents:
       - conventions
       - principles
       - user-access
+      - user-access.intro
       - user-access.approval-chain
       - user-access.review-cadence
       - authentication
@@ -30,6 +60,5 @@ documents:
     blocks:
       - overview
       - scope
-      - classification
-      - assessment
-      - review
+      - managing
+      - types

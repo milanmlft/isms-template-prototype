@@ -1,0 +1,368 @@
+---
+isms-id: ISMS02
+title: "ISMS02 - Roles and Responsibilities"
+filename: ISMS02-roles-and-responsibilities
+document-author: Policy Owner
+classification: public
+version: 5.2
+review:
+  reviewer: Policy Reviewer
+  date: 12/03/2025
+  period: 3 years
+approval:
+  approver: Approval Body
+  date: 12/03/2025
+sources: |
+  [SLMS-IG05](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG05%20IG%20Lead%20Role.docx),
+  [SLMS-IG07](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/SLMS-IG07%20IG%20Officer%20Role.doc),
+  [SLMS-IG16](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG16%20Training%20Policy.docx),
+  [SLMS-IG32](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG32%20IG%20Framework%20Roles%20and%20Responsibilities.docx)
+baseline-doc-version: "1.0"
+number-sections: true
+provenance: >
+  PROTOTYPE PLACEHOLDER TEXT. Written to exercise multi-document composition; not derived from any
+  institution's approved policy and not fit for adoption as-is.
+---
+
+{{< include _preamble.qmd >}}
+
+<!-- isms:begin id=overview -->
+
+## Document Overview {#sec-overview}
+
+This document establishes the framework for defining roles, responsibilities, and authorities within
+the {{< var organisation >}} {{< var isms_name >}} (’the {{< var isms_abbr >}}’). It also outlines
+our approach to providing those roles with appropriate resources, ensuring the competence of the
+persons assigned to those roles, and promoting awareness of information security throughout the
+organisation.
+
+This document also outlines the framework for identifying the necessary resources and competencies
+required for each of the above groups, ensuring they can establish, implement, maintain and
+continuously improve the {{< var isms_abbr >}}
+
+This document covers:
+
+- [Scope of the roles and responsibility](#sec-scope)
+- [The information governance framework](#sec-framework)
+- [How resources are allocated](#sec-resources)
+- [Competencies expected](#sec-competence)
+- [The Shared responsibility Model](#sec-model)
+- [Approved researcher, study and project roles](#sec-roles)
+- [Complete roles catalogue](#sec-roles-catalogue)
+
+**This document addresses the following requirements in the ISO 27001:2022 standard:**
+
+- Clause 5.3
+- Clause 7.1
+- Clause 7.2
+
+<!-- isms:end id=overview -->
+
+<!-- isms:begin id=scope hint="Name the groups, functions and roles within your institution's scope." -->
+
+## Scope of the roles and responsibilities {#sec-scope}
+
+This document applies to all groups and group members within the scope detailed in the
+{{< var isms_abbr >}} scope document, including researchers, governance groups, IT service delivery
+teams and {{< var organisation >}}-wide functions.
+
+This document also outlines the framework for determining the appropriate resources and competencies
+that are to be available to, or possessed by, the members of each of the above groups, enabling them
+to establish, implement, maintain, and continually improve the {{< var isms_abbr >}}
+
+<!-- isms:end id=scope -->
+
+<!-- isms:begin id=framework -->
+
+<!-- isms:begin id=framework.intro -->
+
+## The Information Governance Framework {#sec-framework}
+
+The high-level structure of the {{< var isms_abbr >}}'s Information Governance Framework is
+represented in the diagram below.
+
+<!-- isms:end id=framework.intro -->
+
+<!-- isms:begin id=framework.intro.image -->
+
+![Information Governance Framework](./images/IG_Framework.drawio.svg)
+
+<!-- isms:end id=framework.intro.image -->
+
+<!-- isms:begin id=framework.top-management hint="Describe your institution's top management structure and its reporting line (e.g. board, executive sponsor, risk committee)." -->
+
+### Top Management {#sec-framework-top-management}
+
+The {{< var isms_abbr >}} Top Management consists of {{< var organisation >}}'s
+{{< var roles.senior_risk_owner >}} and the {{< var roles.top_management_body >}}, chaired by the
+{{< var roles.senior_risk_owner >}}. The {{< var roles.senior_risk_owner >}} is a member of
+{{< var organisation >}}'s executive and reports to the {{< var roles.executive_body >}}, providing
+a direct reporting line from the {{< var isms_abbr >}} to {{< var organisation >}}'s primary body
+responsible for operational management, which oversees institutional strategy, risk management, and
+key policies. The {{< var roles.senior_risk_owner >}} receives assurance that relevant processes,
+procedures and policies are in place to protect {{< var organisation >}}'s information assets. The
+{{< var roles.top_management_body >}} receives reports from the {{< var roles.governance_body >}},
+holds it to account, and in turn provides advice and assurance to the
+{{< var roles.senior_risk_owner >}}.
+
+Full details of the {{< var roles.top_management_body >}}'s membership and responsibilities are set
+out in its terms of reference.
+
+Full details of {{< var organisation >}}'s formal committees are published on its governance pages.
+
+<!-- isms:end id=framework.top-management -->
+
+<!-- isms:begin id=framework.governance-body hint="Describe your institution's operational governance group and how its membership is drawn." -->
+
+### {{< var roles.governance_body >}} {#sec-framework-governance-body}
+
+The {{< var roles.governance_body >}} reports to the {{< var roles.top_management_body >}} to assure
+that the {{< var isms_abbr >}} is operating effectively, delivering information security objectives
+and managing information risks within tolerance. While the {{< var roles.governance_body >}} is
+responsible for {{< var isms_abbr >}} policies, it may escalate risks to the
+{{< var roles.top_management_body >}} that cannot be resolved directly. Risk decisions are therefore
+ultimately owned by the {{< var roles.top_management_body >}}.
+
+The {{< var roles.governance_body >}} is composed of members of the {{< var isms_abbr >}}'s
+governance, technical, and service teams. Full details of membership and responsibilities of
+individual roles are set out in its terms of reference.
+
+The {{< var environment_name >}}s (as defined in the classification and tiering policy) that form
+part of the scope are managed by {{< var roles.infrastructure_provider >}}. They are represented at
+the {{< var roles.governance_body >}} to ensure these environments are operating safely.
+
+<!-- isms:end id=framework.governance-body -->
+
+<!-- isms:end id=framework -->
+
+<!-- isms:begin id=resources hint="Describe how your institution funds and resources the ISMS and its environments." -->
+
+## Resources {#sec-resources}
+
+Funding for the {{< var isms_abbr >}} and all {{< var environment_name >}}s is provided through
+{{< var organisation >}}'s {{< var roles.funding_body >}} structure. Top management requests funding
+from the {{< var roles.funding_body >}} in the form of business cases. Top management ensures
+sufficient resources are available. Where resource constraints pose risks to the organisation, top
+management escalates to the {{< var roles.executive_body >}}.
+
+<!-- isms:end id=resources -->
+
+<!-- isms:begin id=competence hint="Describe how your institution assures and maintains staff and researcher competence." -->
+
+## Competence {#sec-competence}
+
+{{< var organisation >}} determines the necessary competence of persons doing work under its control
+that affects its information security performance, including staff, suppliers, and researchers, and
+ensures they are competent to perform this work.
+
+Staff competence and suitability are determined as part of {{< var organisation >}}'s recruitment
+and selection procedure.
+
+All users must complete suitable information governance training. This training must be kept up to
+date; failure to do so may result in losing access to the {{< var environment_name >}}s. A list of
+acceptable training courses can be found in Annex A, and the required competence for each role is
+detailed in the roles catalogue.
+
+The training listed in the roles catalogue below is determined through a training needs analysis.
+Approved researcher training is designed to meet applicable external information governance
+assurance regimes and the requirements of the institution's data providers.
+{{< var organisation >}}-wide training is mandatory and designed by the
+{{< var roles.security_function >}} to meet the requirements of {{< var organisation >}}'s
+obligations to data subjects.
+
+<!-- isms:end id=competence -->
+
+<!-- isms:begin id=model -->
+
+## Shared Responsibility Model {#sec-model}
+
+Security and compliance are shared responsibilities among infrastructure providers, environment
+providers, research teams, and data stewards. The model below provides an overview of how these
+responsibilities are allocated.
+
+<!-- isms:begin id=model.image -->
+
+![Shared Responsibility Model](./images/Shared_Responsibility_Model.png)
+
+<!-- isms:end id=model.image -->
+
+<!-- isms:end id=model -->
+
+<!-- isms:begin id=roles -->
+
+<!-- isms:begin id=roles.intro -->
+
+## Approved Researcher, Study and Project Roles {#sec-roles}
+
+Users of {{< var environment_name >}}s are authorised through the following structure and per the
+[Access Control Policy](./ISMS03-access-control-policy.qmd)
+
+| Term        | Definition                                                                                                                                                                                                                                                                                                                                                      |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Study**   | A study is an Information Governance construct and exists to manage the risk and ownership of specific data.<br><br>**Each study has an {{< var roles.asset_owner >}} that owns that study.** The {{< var roles.asset_owner >}} can create one or more project spaces attached to that study.                                                                   |
+| **Project** | A Project is a permissions boundary within a technical environment. This is where the whole or a subset of the parent study’s data is stored and processed by members of the research team.<br><br>Access to data within a project is managed through permissions determined by the {{< var roles.asset_owner >}} or the {{< var roles.asset_administrator >}}. |
+
+<!-- isms:end id=roles.intro -->
+
+<!-- isms:begin id=roles.approved-researcher -->
+
+### Approved Researcher Role {#sec-roles-approved-researcher}
+
+Approved researcher roles have no access to data by default within any project. Approved researchers
+can apply to create studies (see below) or access projects. An approved researcher must provide
+evidence that they have up-to-date approved information governance training and sign the approved
+researcher agreement.
+
+An approved researcher must be covered by a legal agreement, for example, a staff contract (for
+{{< var organisation >}} staff) or a research contract (for external collaborators).
+
+<!-- isms:end id=roles.approved-researcher -->
+
+<!-- isms:begin id=roles.study -->
+
+### Study Roles {#sec-roles-study}
+
+Study roles have no access to data within projects by default.
+
+At the study level, users can be assigned the role of an {{< var roles.asset_owner >}}, who is
+responsible for owning a 'study'.
+
+The {{< var roles.asset_owner >}} is accountable for any confidential information processed by
+[project users](#sec-roles-project) and is accountable for the safe use of that information. An
+{{< var roles.asset_owner >}} must sign and comply with the responsibilities detailed in the study
+agreement.
+
+An {{< var roles.asset_owner >}} may delegate responsibility (while retaining overall
+accountability) for the day-to-day management of users and projects to an
+{{< var roles.asset_administrator >}}. {{< var roles.asset_administrator >}} responsibilities are
+detailed in the [roles catalogue](#sec-roles-catalogue).
+
+{{< var roles.asset_owner >}}s and {{< var roles.asset_administrator >}}s must be substantive (full)
+members of {{< var organisation >}} staff and approved researchers.
+
+<!-- isms:end id=roles.study -->
+
+<!-- isms:begin id=roles.project -->
+
+### Project Roles {#sec-roles-project}
+
+Project roles have access to data within projects as approved by the {{< var roles.asset_owner >}}
+or {{< var roles.asset_administrator >}}.
+
+A project is a permissions boundary inside which data is stored and processed. All project users
+must be provided access to that specific project by the {{< var roles.asset_owner >}} or
+{{< var roles.asset_administrator >}}.
+
+Users of a {{< var environment_name >}} will only be granted access once they have been designated
+an [“Approved Researcher”](#sec-roles-approved-researcher) and can be members of
+{{< var organisation >}} staff, students, visitors or external collaborators.
+
+Users may have different permissions within a project assigned by the {{< var roles.asset_owner >}}
+or the {{< var roles.asset_administrator >}}. For example, some users will have write access to
+data, while others may be limited to read-only access.
+
+All study and project users are encouraged to participate as members of the research community,
+raising issues and requesting improvements to the environment.
+
+<!-- isms:end id=roles.project -->
+
+<!-- isms:end id=roles -->
+
+<!-- isms:begin id=roles-catalogue -->
+
+## Roles Catalogue {#sec-roles-catalogue}
+
+<!-- isms:begin id=roles-catalogue.user hint="List the roles your researchers and data users hold, and their responsibilities and competency requirements." -->
+
+### User Roles {#sec-roles-catalogue-user}
+
+| User Roles                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |                                                                                                                                             |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Role**                              | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | **Competency and Awareness Requirement**                                                                                                    |
+| Approved Researcher                   | A "safe" person. Defined by contracts, attestations and competency (training).<br>Must complete training and sign an approved researcher agreement which sets out responsibilities                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Approved researcher training<br><br>Complete the approved researcher agreement<br><br>Read and understand relevant policies and procedures. |
+| {{< var roles.asset_owner >}}         | The {{< var roles.asset_owner >}} is accountable for any confidential information processed by project users (see below) and for ensuring the safe use of that information. An {{< var roles.asset_owner >}} must sign the study agreement.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Be an approved researcher<br><br>Sign the study agreement.                                                                                  |
+| {{< var roles.asset_administrator >}} | Be responsible for the day-to-day management of users and act with delegated authority from an {{< var roles.asset_owner >}}.<br><br>{{< var roles.asset_administrator >}} responsibilities are set out in the information asset administrator agreement.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Be an approved researcher.<br><br>Read and understand the information asset administrator responsibilities.                                 |
+| Project User                          | Project users have access to some or all data within the boundaries of a project within an environment.<br><br>Responsibilities for all project users are set out in the approved researcher agreement and any specific requirements of that project related to handling of the data within that project as set out by the {{< var roles.asset_owner >}}.<br><br>Project users can be further subdivided to provide different access within a project. Some examples below:<br>+ Project writer - Can read and write data to shared resources within a specific project<br>+ Project read only - Can read data from shared resources within a specific project<br>+ Project egresser - Can egress "safe" outputs data from a specific {{< var environment_abbr >}} project | Be an approved researcher                                                                                                                   |
+| Project Ingress User                  | A person approved to ingress data to a specific {{< var environment_abbr >}} project. This role does not require the approved researcher role and does not have access to any data within the environment, and ingress access can be approved by any project user (via Invite).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | None                                                                                                                                        |
+
+<!-- isms:end id=roles-catalogue.user -->
+
+<!-- isms:begin id=roles-catalogue.management hint="List your institution's management-level governance roles." -->
+
+### Management {#sec-roles-catalogue-management}
+
+| Management                            |                                                                                                                                                                                                                                                                                                                                                                                                    |                                                         |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Role**                              | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                               | **Competency and Awareness Requirement**                |
+| {{< var roles.executive_body >}}      | Oversight of {{< var organisation >}} and responsible for setting risk appetite and tolerance. See its terms of reference.                                                                                                                                                                                                                                                                         | NA                                                      |
+| {{< var roles.senior_risk_owner >}}   | As part of the {{< var roles.top_management_body >}}, the {{< var roles.senior_risk_owner >}} understands how information risks may impact the strategic academic goals of the organisation and takes ownership of the Research Information Governance Policy. Their responsibilities are set out separately.                                                                                      | {{< var roles.senior_risk_owner >}} training            |
+| {{< var roles.top_management_body >}} | Receives reports from the {{< var roles.governance_body >}}, provides advice and assurance to the {{< var roles.senior_risk_owner >}} and serves as top management for the {{< var isms_abbr >}}.<br>See its terms of reference.                                                                                                                                                                   | Members must read and understand the terms of reference |
+| {{< var roles.governance_body >}}     | Ensures that effective and informed decisions are made about the operation of {{< var organisation >}}'s {{< var isms_name >}} and that evidence of this is reported to the {{< var roles.top_management_body >}}. The {{< var roles.governance_body >}} may also escalate risks to the {{< var roles.top_management_body >}} that cannot be resolved by the group.<br>See its terms of reference. | Members must read and understand the terms of reference |
+
+<!-- isms:end id=roles-catalogue.management -->
+
+<!-- isms:begin id=roles-catalogue.governance hint="List your institution's information governance roles, such as IG leads and internal audit." -->
+
+### Governance {#sec-roles-catalogue-governance}
+
+| Governance                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Role**                       | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | **Competency and Awareness Requirement**                                        |
+| {{< var roles.ig_lead >}}      | Responsibility for the managerial operation of {{< var organisation >}}'s {{< var isms_name >}}, Information Governance framework, and compliance with applicable external information governance assurance regimes. Provides expertise to and liaises between the {{< var roles.senior_risk_owner >}} and research teams. Acts as the primary IG contact for all external parties and as a point of escalation for IG matters within {{< var organisation >}}.<br>Full details are set out in the IG Lead role description. | As detailed as part of recruitment in the job description, advert and interview |
+| Information Governance Officer | Operational responsibility for the {{< var isms_name >}}, including but not limited to the maintenance of associated records and the provision of IG training.<br>Full details are set out in the IG Officer role description.                                                                                                                                                                                                                                                                                               | As detailed as part of recruitment in the job description, advert and interview |
+| Internal Auditor               | {{< var organisation >}}'s {{< var isms_abbr >}} internal auditor is independent of the {{< var isms_abbr >}} team and is responsible for assessing and reporting on all controls and parts of the standard within the 3-year certification cycle. Internal audits also extend to research teams’ compliance with the standard.                                                                                                                                                                                              | Suitable ISO 27001 auditor training                                             |
+
+<!-- isms:end id=roles-catalogue.governance -->
+
+<!-- isms:begin id=roles-catalogue.technical hint="List the technical and service roles responsible for operating your environments." -->
+
+### Technical and Service {#sec-roles-catalogue-technical}
+
+| Technical and Service               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |                                          |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Role**                            | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | **Competency and Awareness Requirement** |
+| {{< var roles.environment_owner >}} | **{{< var roles.environment_owner >}} must:**<br>+ Be accountable for the safe development and operation of the {{< var environment_name >}} they own.<br>+ Describe and maintain the definition of the {{< var environment_name >}} they own<br>+ Be accountable for maintaining the technical controls of the environment<br>+ Ensure changes to the technical environment are made safely<br>+ Lead on root cause analysis and incident response<br>+ Represent the environment during audit<br>+ Act in accordance with the responsibilities of a standard product, platform or service owner within {{< var roles.infrastructure_provider >}}<br>+ Approve access to infrastructure management for all environment IT administrators | Approved Researcher Training             |
+| Environment Administrator           | **An environment administrator must:**<br>+ Be responsible for the safe development and operation of the {{< var environment_name >}} they administer.<br>+ Maintain design and operational documentation around the environment<br>+ Be responsible for maintaining the technical controls of the environment<br>+ Participate in root cause analysis and incident response<br>+ Review and approve contributions from developers                                                                                                                                                                                                                                                                                                        | Approved Researcher Training             |
+| Environment Developer               | **An environment developer must:**<br>+ Contribute to the safe development and operation of the {{< var environment_name >}} they develop.<br>+ Implement safe coding practices                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | None                                     |
+| Supporting Service Owner            | Where the environment relies on supporting services, the supporting service owner is accountable for the safe running of any supporting component service, such as physical hosting. These will be detailed within the Environment Definition Document.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | None                                     |
+
+<!-- isms:end id=roles-catalogue.technical -->
+
+<!-- isms:begin id=roles-catalogue.organisation-wide hint="List the roles and functions that operate across your institution rather than within the ISMS itself." -->
+
+### Organisation-wide Roles {#sec-roles-catalogue-organisation-wide}
+
+| Organisation-wide Roles                    |                                                                                                                                                                                                                                |     |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
+| **Role**                                   | **Responsibilities**                                                                                                                                                                                                           |
+| Chief Information Security Officer (CISO)  | Responsible for {{< var organisation >}}'s corporate information security agenda. Advises and guides the {{< var roles.senior_risk_owner >}} on information security matters. Head of the {{< var roles.security_function >}}. |
+| {{< var roles.security_function >}}        | Responsible for {{< var organisation >}}'s overall stance on information security, including information security policies, security incident management, and liaison with law enforcement where required.                     |
+| Human Resources (HR)                       | HR is responsible for {{< var organisation >}}'s policies and processes covering recruitment, screening, disciplinary action, and termination of employment.                                                                   |
+| {{< var roles.funding_body >}}             | Provides resources to maintain and develop {{< var organisation >}}'s {{< var isms_name >}} and the {{< var environment_name >}}s and information systems.                                                                     |
+| {{< var roles.data_protection_function >}} | Responsible for providing key information for all staff, students and researchers by ensuring {{< var organisation >}}'s policies and codes of practice about data protection are implemented across all departments.          |
+
+<!-- isms:end id=roles-catalogue.organisation-wide -->
+
+<!-- isms:begin id=roles-catalogue.external hint="List external roles and suppliers relevant to your environments." -->
+
+### External Roles {#sec-roles-catalogue-external}
+
+| External Roles                |                                                                                                                                                                                                                                                         |     |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| **Role**                      | **Responsibilities**                                                                                                                                                                                                                                    |
+| External platform providers   | Responsible for the provision of storage, compute, and any associated software as a service, as defined in the environment definition of a trusted research environment.<br>Comply with controls committed to in contract or through written agreement. |
+| Technical equipment suppliers | Responsible for providing updates to software/firmware and for complying with contractual requirements.                                                                                                                                                 |
+
+<!-- isms:end id=roles-catalogue.external -->
+
+<!-- isms:begin id=roles-catalogue.annex-a hint="List your institution's approved information governance training courses." -->
+
+### Annex A - Suitable Training Resources {#sec-roles-catalogue-annex-a}
+
+| Role                | Training                                                    | Link                                             |
+| ------------------- | ----------------------------------------------------------- | ------------------------------------------------ |
+| Approved Researcher | Data security and information governance awareness training | Provided by your institution's training platform |
+
+<!-- isms:end id=roles-catalogue.annex-a -->
+
+<!-- isms:end id=roles-catalogue -->

@@ -1,12 +1,27 @@
 ---
 isms-id: ISMS03
 title: "ISMS03 - Access Control Policy"
+filename: ISMS03-access-control-policy
+document-author: Policy Owner
+classification: public
+version: 4.1
+review:
+  reviewer: Policy Reviewer
+  date: 08/04/2025
+  period: 3 years
+approval:
+  approver: Approval Body
+  date: 12/03/2025
+sources: |
+  [SLMS-IG36](https://github.com/UCL-ARC/research-data-isms/blob/main/docs/Archive/ISMS_Documented_Information_Archive/UCL-IG36%20Data%20Safe%20Haven%20Access%20Control%20Policy.docx)
 baseline-doc-version: "1.0"
 number-sections: true
 provenance: >
   PROTOTYPE PLACEHOLDER TEXT. Written to exercise multi-document composition; not derived
   from any institution's approved policy and not fit for adoption as-is.
 ---
+
+{{< include _preamble.qmd >}}
 
 <!-- isms:begin id=overview -->
 
@@ -74,6 +89,8 @@ Access to information systems shall be managed according to the following princi
 
 <!-- isms:begin id=user-access -->
 
+<!-- isms:begin id=user-access.intro -->
+
 ## User Access Management {#sec-user-access}
 
 All user access shall be managed by an appropriate role as described in the
@@ -81,6 +98,8 @@ All user access shall be managed by an appropriate role as described in the
 
 - **User registration, de-registration, and access authorisation:** Formal procedures for
   adding, changing, or removing user access shall be implemented.
+
+<!-- isms:end id=user-access.intro -->
 
 <!-- isms:begin id=user-access.approval-chain hint="Which roles approve new or changed access at your institution?" -->
 

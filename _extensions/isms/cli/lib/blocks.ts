@@ -266,14 +266,18 @@ export interface OverrideOp {
   line: number;
 }
 
-/** Parse an institution override file. Same grammar, `isms:override` instead of `isms:begin`. */
-export function parseOverrides(file: string, src: string): { document?: string; ops: Map<string, OverrideOp> } {
+/**
+ * Parse an institution override file. Same grammar, `isms:override` instead of `isms:begin`.
+ *
+ * The front matter comes back as raw YAML text, exactly as `parseDocument` returns the
+ * baseline's: this module owns the block grammar and nothing else, so what the keys *mean* —
+ * `document:`, the front-matter overrides, which keys are protected — is `compose.ts`'s business.
+ */
+export function parseOverrides(file: string, src: string): { frontMatter: string; ops: Map<string, OverrideOp> } {
   const { frontMatter, body, bodyStartLine } = splitFrontMatter(src);
   const lines = body.split("\n");
   const delims = scanDelimiters(file, lines, bodyStartLine);
   const ops = new Map<string, OverrideOp>();
-
-  const docMatch = frontMatter.match(/^\s*document:\s*"?([A-Za-z0-9_-]+)"?\s*$/m);
 
   let i = 0;
   while (i < delims.length) {
@@ -312,7 +316,7 @@ export function parseOverrides(file: string, src: string): { document?: string; 
     });
     i += 2;
   }
-  return { document: docMatch?.[1], ops };
+  return { frontMatter, ops };
 }
 
 function trimBlankLines(s: string): string {

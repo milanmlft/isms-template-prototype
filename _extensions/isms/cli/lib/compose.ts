@@ -1,5 +1,6 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "stdlib/yaml";
-import { join } from "stdlib/path"
+import { join, relative, SEPARATOR } from "stdlib/path"
+import { WalkError, walkSync } from "stdlib/fs";
 import { DocumentSpec, Project } from "./project.ts"
 import {
   emit,
@@ -25,6 +26,28 @@ export const COMPOSED_DIR = "docs";
  */
 export const OVERRIDES_DIR = "_overrides";
 
+const PREAMBLE_FILE = join(COMPOSED_DIR, "_preamble.qmd")
+
+/**
+ * Front-matter keys an institution may not set, and why each is refused.
+ *
+ * The first three are the composed document's account of what it is: the ID its overrides are
+ * keyed on, the baseline release it was built from, and the file it was written to. An
+ * institution able to rewrite those could make the artefact misreport its own provenance, which
+ * is the one thing an audit trail must not do.
+ *
+ * `author` is refused for a different reason: Quarto special-cases that key and draws its own
+ * title-block byline in addition to the one `docs/_preamble.qmd` already renders. The baseline
+ * uses `document-author` precisely to avoid the duplicate, so setting `author` is never what
+ * anyone means.
+ */
+const PROTECTED_META: Record<string, string> = {
+  "isms-id": "it is the ID this document's overrides are keyed on",
+  "baseline-doc-version": "it records which baseline release the document was composed from",
+  "filename": "it names the composed file, which the manifest decides",
+  "author": "Quarto renders it as a second byline; set document-author instead",
+};
+
 export interface ComposedDoc {
   ismsId: string;
   title: string;
@@ -35,11 +58,29 @@ export interface ComposedDoc {
   deviations: Deviation[];
 }
 
+/**
+ * A non-`.qmd` file to mirror byte-for-byte into the composed tree. `origin` is carried through
+ * to the console summary 
+ */
+export interface Asset {
+  /** Absolute path to the file to copy bytes from. */
+  path: string;
+  origin: "baseline" | "override";
+}
+
 export interface ComposeResult {
   files: Map<string, string>;
+  assets: Map<string, Asset>;
   docs: ComposedDoc[];
   /** Governance gaps worth naming. Not errors: composition still succeeded. */
   warnings: string[];
+}
+
+/**
+ * Folds a path under the composed tree for collision comparison. 
+ */
+export function foldPath(rel: string): string {
+  return rel.normalize("NFC").toLowerCase();
 }
 
 export async function compose(project: Project): Promise<ComposeResult> {
@@ -59,12 +100,18 @@ export async function compose(project: Project): Promise<ComposeResult> {
     const src = Deno.readTextFileSync(baselinePath);
     const parsed: ParsedDoc = parseDocument(baselinePath, src);
 
-    const { path: overrideSource, ops } = loadOverrides(root, spec, parsed);
-
     const baseMeta = (parseYaml(parsed.frontMatter || "{}") ?? {}) as Record<string, unknown>;
 
+    const { path: overrideSource, ops, meta: overrideMeta, warnings: metaWarnings } =
+      loadOverrides(root, spec, parsed, baseMeta);
+    warnings.push(...metaWarnings);
+
+    // Dates are normalised over the merged result rather than over the override alone, so a
+    // baseline that one day writes an unquoted ISO date is covered by the same pass.
+    const meta = normaliseDates(mergeFrontMatter(baseMeta, overrideMeta)) as Record<string, unknown>;
+
     const body = emit(parsed.root, ops, true);
-    const composed = `---\n${stringifyYaml(baseMeta, { sortKeys: true, lineWidth: 100 })}---\n\n${banner}\n${body}\n`;
+    const composed = `---\n${stringifyYaml(meta, { sortKeys: true, lineWidth: 100 })}---\n\n${banner}\n${body}\n`;
     const relPath = join(COMPOSED_DIR, `${spec.id}-${slug(spec.title)}.qmd`);
     files.set(relPath, tidy(composed));
 
@@ -75,15 +122,111 @@ export async function compose(project: Project): Promise<ComposeResult> {
 
     docs.push({
       ismsId: spec.id,
-      title: (baseMeta.title as string) ?? spec.title,
+      title: (meta.title as string) ?? spec.title,
       path: relPath,
       overrideSource,
       deviations,
     })
   }
 
+  const preamblePath = join(baseline.dir, PREAMBLE_FILE);
+  let baselinePreamble: string;
+  try {
+    baselinePreamble = Deno.readTextFileSync(preamblePath);
+  } catch (err) {
+    // Unlike every other baseline file, the preamble is composed by hard-coded path rather than
+    // through the manifest, so a vendored baseline missing it would otherwise abort with a raw
+    // NotFound naming neither the file's role nor the fix.
+    if (err instanceof Deno.errors.NotFound) {
+      throw new Error(
+        `${preamblePath}: every composed document includes this file, so the baseline cannot be ` +
+        `composed without it. This vendored baseline is incomplete.`,
+      );
+    }
+    throw err;
+  }
+
   files.set(DEVIATIONS_PATH, tidy(renderRegister(banner, baselineVersion, docs)));
-  return { files, docs, warnings };
+  files.set(PREAMBLE_FILE, baselinePreamble);
+
+  const { assets: baselineAssets, warnings: baselineAssetWarnings } = walkAssets(
+    join(baseline.dir, COMPOSED_DIR),
+    "baseline",
+  );
+  const { assets: overrideAssets, warnings: overrideAssetWarnings } = collectOverrideAssets(root);
+  warnings.push(...baselineAssetWarnings, ...overrideAssetWarnings);
+
+  const composedPaths = new Map<string, string>();
+  for (const rel of files.keys()) composedPaths.set(foldPath(rel), rel);
+
+  const assets = new Map<string, Asset>();
+  const foldedAssetPaths = new Map<string, string>(); // folded composed path -> the rel that claimed it
+  for (const [rel, asset] of [...baselineAssets, ...overrideAssets]) {
+    const key = foldPath(rel);
+
+    const docClash = composedPaths.get(key);
+    if (docClash !== undefined) {
+      throw new Error(
+        `${asset.origin} asset ${rel} (from ${asset.path}) collides with the composed document ` +
+        `at ${docClash}. ` +
+        `An asset can never share a composed path with a document; rename the source file.`,
+      );
+    }
+    const existingRel = foldedAssetPaths.get(key);
+    if (existingRel !== undefined) {
+      const existing = assets.get(existingRel)!;
+      throw new Error(
+        `${asset.origin} asset ${rel} (from ${asset.path}) collides with ` +
+        `${existing.origin} asset ${existingRel} (from ${existing.path}). ` +
+        `Rename one of the files so the composed path is unique.`,
+      );
+    }
+
+    foldedAssetPaths.set(key, rel);
+    assets.set(rel, asset);
+  }
+
+  return { files, assets, docs, warnings };
+}
+
+/**
+ * Walk a docs-shaped directory tree and map every non-`.qmd` file it contains to its position
+ * under the composed `docs/`. Shared by the baseline walk (`_extensions/isms/docs/`) and the
+ * institution walk (`_overrides/`, see `collectOverrideAssets`) 
+ */
+function walkAssets(dir: string, origin: Asset["origin"]): { assets: Map<string, Asset>; warnings: string[] } {
+  const assets = new Map<string, Asset>();
+  const warnings: string[] = [];
+  for (const entry of walkSync(dir, { includeDirs: false, followSymlinks: false, skip: [/\.qmd$/i] })) {
+    const relFromRoot = relative(dir, entry.path);
+    const rel = join(COMPOSED_DIR, relFromRoot);
+    if (entry.isSymlink) {
+      warnings.push(`${origin} asset ${rel} is a symlink and was not copied`);
+      continue;
+    }
+    if (relFromRoot.split(SEPARATOR).some((segment: any) => segment.startsWith("."))) {
+      warnings.push(`${origin} asset ${rel} is a dotfile, or inside one, and was not copied`);
+      continue;
+    }
+    assets.set(rel, { path: entry.path, origin });
+  }
+  return { assets, warnings };
+}
+
+/**
+ * Every non-`.qmd` file under `<root>/_overrides/` is mirrored to the same relative position
+ * under the composed `docs/` 
+ */
+function collectOverrideAssets(root: string): { assets: Map<string, Asset>; warnings: string[] } {
+  try {
+    return walkAssets(join(root, OVERRIDES_DIR), "override");
+  } catch (err: any) {
+    // No `_overrides/` at all is the normal case — most adopting institutions have no local
+    if (err instanceof WalkError && err.cause instanceof Deno.errors.NotFound) {
+      return { assets: new Map(), warnings: [] };
+    }
+    throw err;
+  }
 }
 
 /**
@@ -92,12 +235,17 @@ export async function compose(project: Project): Promise<ComposeResult> {
  * Overrides live in `<root>/_overrides/<ISMS-ID>.qmd` — one file per document, keyed on the
  * ID rather than the title, so retitling a baseline document does not orphan its overrides.
  * Absence is the normal case: a document with no override file is adopted verbatim.
+ *
+ * `baseMeta` is the baseline's own parsed front matter. It is passed in rather than re-parsed
+ * because the only thing wanted from it here is its key set, to tell a front-matter override
+ * apart from a misspelling of one.
  */
 function loadOverrides(
   root: string,
   spec: DocumentSpec,
   parsed: ParsedDoc,
-): { path?: string; ops: Map<string, OverrideOp> } {
+  baseMeta: Record<string, unknown>,
+): { path?: string; ops: Map<string, OverrideOp>; meta: Record<string, unknown>; warnings: string[] } {
   // The relative path is what the deviations register cites; an absolute one would leak the
   // composing machine's filesystem into a rendered audit page. Errors keep the absolute path,
   // where a full path is what you want in a terminal.
@@ -107,13 +255,24 @@ function loadOverrides(
   try {
     src = Deno.readTextFileSync(path);
   } catch (err) {
-    if (err instanceof Deno.errors.NotFound) return { ops: new Map() };
+    if (err instanceof Deno.errors.NotFound) return { ops: new Map(), meta: {}, warnings: [] };
     throw err;
   }
 
-  const { document, ops } = parseOverrides(path, src);
-  if (document !== undefined && document !== spec.id) {
-    throw new ParseError(path, 1, `front matter says document: ${document}, but this file overrides ${spec.id}`);
+  const { frontMatter, ops } = parseOverrides(path, src);
+  const meta = parseOverrideMeta(path, spec, frontMatter);
+
+  // Not an error: Quarto front matter is open-ended, and an institution may legitimately want a
+  // local key of its own. But the likeliest cause by far is a typo in a baseline key, which
+  // would otherwise be a silent no-op on metadata someone meant to publish.
+  const warnings: string[] = [];
+  for (const key of Object.keys(meta)) {
+    if (key in baseMeta) continue;
+    warnings.push(
+      `${rel}:${metaLine(frontMatter, key)}: front matter key "${key}" is not in the ${spec.id} ` +
+      `baseline. It will be added to the composed document, but nothing renders it unless a ` +
+      `template reads it. Baseline keys: ${Object.keys(baseMeta).sort().join(", ")}`,
+    );
   }
 
   for (const op of ops.values()) {
@@ -140,7 +299,118 @@ function loadOverrides(
       }
     }
   }
-  return { path: rel, ops };
+  return { path: rel, ops, meta, warnings };
+}
+
+/**
+ * Read an override file's front matter as the institution's front-matter overrides.
+ *
+ * Every key except the reserved `document:` is metadata to merge into the composed document.
+ * Unlike a block override there is no governance attribute to carry and no row in the deviations
+ * register: replacing the baseline's `document-author: Policy Owner` placeholder with a real
+ * name is adopting the baseline, not departing from it.
+ */
+function parseOverrideMeta(
+  path: string,
+  spec: DocumentSpec,
+  frontMatter: string,
+): Record<string, unknown> {
+  let parsedYaml: unknown;
+  try {
+    parsedYaml = parseYaml(frontMatter || "{}") ?? {};
+  } catch (err) {
+    throw new ParseError(path, 1, `front matter is not valid YAML: ${(err as Error).message}`);
+  }
+  if (typeof parsedYaml !== "object" || parsedYaml === null || Array.isArray(parsedYaml)) {
+    throw new ParseError(
+      path,
+      1,
+      `front matter must be a mapping of keys to values, not ${Array.isArray(parsedYaml) ? "a list" : "a " + typeof parsedYaml}`,
+    );
+  }
+
+  const meta = { ...(parsedYaml as Record<string, unknown>) };
+
+  // `document:` names the baseline document this file overrides. It is a cross-check on the
+  // filename, not content to emit, so it never reaches the composed front matter.
+  const document = meta.document;
+  delete meta.document;
+  if (document !== undefined) {
+    const line = metaLine(frontMatter, "document");
+    if (typeof document !== "string") {
+      throw new ParseError(path, line, `document: must be an ISMS ID such as ${spec.id}`);
+    }
+    if (document !== spec.id) {
+      throw new ParseError(path, line, `front matter says document: ${document}, but this file overrides ${spec.id}`);
+    }
+  }
+
+  for (const key of Object.keys(meta)) {
+    const why = PROTECTED_META[key];
+    if (why === undefined) continue;
+    throw new ParseError(
+      path,
+      metaLine(frontMatter, key),
+      `"${key}" cannot be overridden: ${why}`,
+    );
+  }
+
+  return meta;
+}
+
+/**
+ * Merge an institution's front matter over the baseline's.
+ *
+ * Mappings merge key by key; everything else replaces. The nesting is the reason: the preamble
+ * reads `review.reviewer`, `review.date`, `review.period` and `approval.*`, and an institution
+ * naming one of them should not silently lose the siblings it left alone. A scalar, a sequence
+ * or an explicit `null` replaces outright — `null` is a real value in this front matter
+ * (baseline ISMS08 ships `sources: null`), so it sets a key rather than removing one.
+ */
+function mergeFrontMatter(
+  base: Record<string, unknown>,
+  over: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(over)) {
+    // stringifyYaml throws on undefined, and YAML has no way to spell it in the first place.
+    if (value === undefined) continue;
+    const existing = out[key];
+    out[key] = isMapping(existing) && isMapping(value) ? mergeFrontMatter(existing, value) : value;
+  }
+  return out;
+}
+
+function isMapping(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v) && !(v instanceof Date);
+}
+
+/**
+ * Rewrite the `Date`s YAML's default schema produces back into the date that was written.
+ *
+ * An unquoted `2026-07-14` parses to a JS Date and re-serialises as `2026-07-14T00:00:00.000Z`,
+ * which is then what the preamble prints under "Approved date". Nobody writing a review date in
+ * an override means to publish a UTC timestamp.
+ */
+function normaliseDates(value: unknown): unknown {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) return value.map(normaliseDates);
+  if (isMapping(value)) {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, normaliseDates(v)]));
+  }
+  return value;
+}
+
+/**
+ * 1-based line of `key:` in the override file, so an error points at the offending key rather
+ * than at the top of the file. Falls back to line 1 when the key came from flow-style YAML.
+ */
+function metaLine(frontMatter: string, key: string): number {
+  const at = frontMatter.split("\n").findIndex((line) =>
+    line.startsWith(key) && /^\s*:/.test(line.slice(key.length))
+  );
+  // Front matter opens on line 1 with `---`, so its own first line is the file's second.
+  return at === -1 ? 1 : at + 2;
 }
 
 function slug(s: string): string {

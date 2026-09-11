@@ -61,7 +61,7 @@ runs automatically on every render:
 
 1. `lib/project.ts` — `loadProject()` reads `_extensions/isms/manifest.yml`.
 2. `lib/compose.ts` — for each manifest document, parse the baseline `.qmd`, load and validate
-   `_overrides/<ID>.qmd` if present, apply the overrides, re-emit front matter + a
+   `_overrides/<ID>.qmd` if present, apply the overrides, re-emit the merged front matter + a
    `DO NOT EDIT BY HAND` banner + body.
 3. `lib/deviations.ts` — collects every override's governance metadata plus the anchor it landed
    on, and renders `deviations.qmd`.
@@ -117,8 +117,7 @@ and never renders the override sources as pages of the site; **do not** add a `p
 list to exclude it, as a negation-only render list breaks the sidebar's `auto:` glob.
 
 Each file uses the same block grammar with `isms:override`, `mode=replace|before|after|delete`,
-plus `reason` / `approved-by` / `approved-date` governance attributes, and an optional
-`document:` front-matter key that is cross-checked against the ID in the filename.
+plus `reason` / `approved-by` / `approved-date` governance attributes.
 `loadOverrides()` in `compose.ts` rejects two things outright, because both would otherwise be
 silent no-ops on content someone has formally approved:
 
@@ -137,9 +136,43 @@ them is worse than none — a reader who learns to trust it reads unmarked local
 baseline. Restoring a visual chip means a Lua filter that consumes the marker comments post-parse
 and attaches a class to the following AST node, sidestepping markdown indentation entirely.
 
-Not yet built: overriding front matter, appending institution-only sections outside the baseline
-block set, and validation of `approved-date` (free text today, so date formats can be mixed and
-unsortable within one register).
+#### Front-matter overrides
+
+The override file's own front matter is the institution's front matter. Every key except the
+reserved `document:` — cross-checked against the ID in the filename — is merged into the composed
+document's, which is what `docs/_preamble.qmd` prints at the top of every page. This is the only
+way to replace the baseline's deliberate placeholders (`document-author: Policy Owner`,
+`approver: Approval Body`) without hand-editing generated output.
+
+- **Mappings deep-merge; everything else replaces.** The preamble reads `review.reviewer`,
+  `review.date`, `review.period` and `approval.*`, so naming one field must not silently drop the
+  siblings left alone. A scalar, a sequence or an explicit `null` replaces outright — `null` is a
+  real value here (baseline ISMS08 ships `sources: null`), so it sets a key rather than removing
+  one.
+- **`PROTECTED_META` in `compose.ts` is a hard error, not a warning.** `isms-id`,
+  `baseline-doc-version` and `filename` are the document's account of what it is; an institution
+  able to rewrite them could make the artefact misreport its own provenance. `author` is refused
+  for a different reason — Quarto special-cases it and draws a second byline over the one the
+  preamble already renders, so it is always a mistake for `document-author`.
+- **A key absent from the baseline front matter warns rather than fails.** Quarto front matter is
+  open-ended and a local key may be deliberate, but the likelier cause is a typo in a baseline
+  key, which would otherwise be a silent no-op.
+- **`normaliseDates()` exists because YAML's default schema turns an unquoted `2026-07-14` into a
+  JS `Date`**, which re-serialises as `2026-07-14T00:00:00.000Z` — a UTC timestamp nobody meant to
+  publish under "Approved date". It is applied over the merged result, so a baseline that one day
+  writes an ISO date is covered by the same pass.
+- **Front-matter overrides are not deviations** and get no row in the register. Replacing a
+  placeholder author with a real name is adopting the baseline, not departing from it; recording
+  each would be noise in an audit artefact. A file carrying only front-matter keys therefore
+  leaves its document listed as adopted verbatim, which `renderRegister()` gets for free by
+  keying off `deviations.length`. They also carry no `isms:block`-style provenance marker in the
+  composed output — the asymmetry with body overrides is deliberate, for the same reason.
+- Overriding `title:` retitles the page, the sidebar entry and the register row, but **not** the
+  composed filename, which is `<ID>-<slug(manifest title)>.qmd`.
+
+Not yet built: appending institution-only sections outside the baseline block set, and validation
+of `approved-date` (free text today, so date formats can be mixed and unsortable within one
+register).
 
 ### The deviations register (`lib/deviations.ts`)
 
@@ -177,7 +210,9 @@ differs, so a clock value would mean git churn and a changed Quarto input on eve
 - Never hardcode institution specifics. Use `{{< var organisation >}}`,
   `{{< var environment_name >}}`, `{{< var roles.ig_lead >}}` etc., backed by `_variables.yml`.
 - Front matter conventions in existing docs: `isms-id`, `title` (`"ISMS03 - Access Control
-  Policy"`), `baseline-doc-version`, `number-sections: true`.
+  Policy"`), `baseline-doc-version`, `document-author` (not `author` — Quarto special-cases that
+  key and renders its own title-block byline in addition to the one `docs/_preamble.qmd` already
+  renders), `number-sections: true`.
 - Sections carry explicit `{#sec-...}` anchors so cross-document links stay stable.
 - Register every new document in `manifest.yml` (`id`, `file`, `title`, `blocks`) — the manifest,
   not the filesystem, decides what is composed.
