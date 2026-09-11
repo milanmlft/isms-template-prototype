@@ -28,6 +28,8 @@ provenance: >
 
 <!-- isms:begin id=overview -->
 
+<!-- isms:begin id=overview.intro -->
+
 ## Document Overview {#sec-overview}
 
 This document establishes the framework for defining roles, responsibilities, and authorities within
@@ -38,9 +40,13 @@ organisation.
 
 This document also outlines the framework for identifying the necessary resources and competencies
 required for each of the above groups, ensuring they can establish, implement, maintain and
-continuously improve the {{< var isms_abbr >}}
+continuously improve the {{< var isms_abbr >}}.
 
 This document covers:
+
+<!-- isms:end id=overview.intro -->
+
+<!-- isms:begin id=overview.contents -->
 
 - [Scope of the roles and responsibility](#sec-scope)
 - [The information governance framework](#sec-framework)
@@ -50,11 +56,17 @@ This document covers:
 - [Approved researcher, study and project roles](#sec-roles)
 - [Complete roles catalogue](#sec-roles-catalogue)
 
+<!-- isms:end id=overview.contents -->
+
 **This document addresses the following requirements in the ISO 27001:2022 standard:**
+
+<!-- isms:begin id=overview.covers -->
 
 - Clause 5.3
 - Clause 7.1
 - Clause 7.2
+
+<!-- isms:end id=overview.covers -->
 
 <!-- isms:end id=overview -->
 
@@ -63,12 +75,12 @@ This document covers:
 ## Scope of the roles and responsibilities {#sec-scope}
 
 This document applies to all groups and group members within the scope detailed in the
-{{< var isms_abbr >}} scope document, including researchers, governance groups, IT service delivery
-teams and {{< var organisation >}}-wide functions.
+{{< var isms_abbr >}} scope, including researchers, governance groups, IT service delivery teams and
+{{< var organisation >}}-wide functions.
 
 This document also outlines the framework for determining the appropriate resources and competencies
 that are to be available to, or possessed by, the members of each of the above groups, enabling them
-to establish, implement, maintain, and continually improve the {{< var isms_abbr >}}
+to establish, implement, maintain, and continually improve the {{< var isms_abbr >}}.
 
 <!-- isms:end id=scope -->
 
@@ -149,19 +161,33 @@ management escalates to the {{< var roles.executive_body >}}.
 
 <!-- isms:begin id=competence hint="Describe how your institution assures and maintains staff and researcher competence." -->
 
+<!-- isms:begin id=competence.definition -->
+
 ## Competence {#sec-competence}
 
 {{< var organisation >}} determines the necessary competence of persons doing work under its control
 that affects its information security performance, including staff, suppliers, and researchers, and
 ensures they are competent to perform this work.
 
+<!-- isms:end id=competence.definition -->
+
+<!-- isms:begin id=competence.procedure -->
+
 Staff competence and suitability are determined as part of {{< var organisation >}}'s recruitment
 and selection procedure.
+
+<!-- isms:end id=competence.procedure -->
+
+<!-- isms:begin id=competence.process -->
 
 All users must complete suitable information governance training. This training must be kept up to
 date; failure to do so may result in losing access to the {{< var environment_name >}}s. A list of
 acceptable training courses can be found in Annex A, and the required competence for each role is
 detailed in the roles catalogue.
+
+<!-- isms:end id=competence.process -->
+
+<!-- isms:begin id=competence.requirements -->
 
 The training listed in the roles catalogue below is determined through a training needs analysis.
 Approved researcher training is designed to meet applicable external information governance
@@ -169,6 +195,8 @@ assurance regimes and the requirements of the institution's data providers.
 {{< var organisation >}}-wide training is mandatory and designed by the
 {{< var roles.security_function >}} to meet the requirements of {{< var organisation >}}'s
 obligations to data subjects.
+
+<!-- isms:end id=competence.requirements -->
 
 <!-- isms:end id=competence -->
 
