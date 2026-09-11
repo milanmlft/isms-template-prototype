@@ -360,8 +360,8 @@ raising issues and requesting improvements to the environment.
 
 ### Organisation-wide Roles {#sec-roles-catalogue-organisation-wide}
 
-| Organisation-wide Roles                    |                                                                                                                                                                                                                                |     |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
+| Organisation-wide Roles                    |                                                                                                                                                                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Role**                                   | **Responsibilities**                                                                                                                                                                                                           |
 | Chief Information Security Officer (CISO)  | Responsible for {{< var organisation >}}'s corporate information security agenda. Advises and guides the {{< var roles.senior_risk_owner >}} on information security matters. Head of the {{< var roles.security_function >}}. |
 | {{< var roles.security_function >}}        | Responsible for {{< var organisation >}}'s overall stance on information security, including information security policies, security incident management, and liaison with law enforcement where required.                     |
@@ -375,8 +375,8 @@ raising issues and requesting improvements to the environment.
 
 ### External Roles {#sec-roles-catalogue-external}
 
-| External Roles                |                                                                                                                                                                                                                                                         |     |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| External Roles                |                                                                                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Role**                      | **Responsibilities**                                                                                                                                                                                                                                    |
 | External platform providers   | Responsible for the provision of storage, compute, and any associated software as a service, as defined in the environment definition of a trusted research environment.<br>Comply with controls committed to in contract or through written agreement. |
 | Technical equipment suppliers | Responsible for providing updates to software/firmware and for complying with contractual requirements.                                                                                                                                                 |
