@@ -30,7 +30,7 @@ provenance: >
 ## Document Overview {#sec-overview}
 
 This Access Control Policy establishes the requirements to ensure the protection of
-{{< var environment_name >}}s within the scope of {{< var organisation >}}'s {{< var isms_name >}}
+{{< var environment_name >}}s within the scope of {{< var organisation >}}’s {{< var isms_name >}}
 by managing access rights. This policy supports compliance with relevant standards (e.g. ISO/IEC
 27001), ensuring that access to information is based on business needs and aligned with security
 requirements.
@@ -133,7 +133,7 @@ roles and responsibilities framework.
 
 ## Authentication Principles {#sec-authentication}
 
-All users and systems shall comply with {{< var organisation >}}'s authentication standards and
+All users and systems shall comply with {{< var organisation >}}’s authentication standards and
 policies, including multi-factor authentication where required.
 
 <!-- isms:end id=authentication -->
@@ -155,7 +155,7 @@ perform the assigned role or task. A formal record of all allocated privileges s
 
 Physical access shall be granted only upon the authority of the facility owner or service manager.
 All physical information systems shall be protected in accordance with their value and
-classification per {{< var organisation >}}'s information management policies. Approved personnel
+classification per {{< var organisation >}}’s information management policies. Approved personnel
 shall be responsible for physical security measures to prevent unauthorised access to devices or
 data.
 
