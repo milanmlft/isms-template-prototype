@@ -7,17 +7,19 @@
 // missing entry hides an overridable block from everyone, and a phantom entry invites an override
 // that composition will then reject. Removing or renaming one is a MAJOR release.
 //
-// CLAUDE.md records this as a gap ("currently declarative only — nothing validates them against
-// the actual delimiters in the source documents"). It is validated here, not in the CLI, because
-// it is a question about the baseline's own consistency rather than about any composition.
+// It is validated here rather than in the CLI deliberately. Inside `compose()` it would fire during
+// an adopting institution's render, over a defect only the baseline's maintainer can fix, and it
+// would force reading the sources of un-adopted documents — which composition otherwise never
+// touches.
 //
-// Needs no render and no fixture: it parses tracked source files with the project's own parser.
+// Needs no render and no fixture: it parses tracked source files with the project's own parser, and
+// locates the project from this file rather than from the working directory.
 //
-import { join } from "stdlib/path";
+import { fromFileUrl, join } from "stdlib/path";
 import { loadProject } from "../_extensions/isms/cli/lib/project.ts";
 import { parseDocument } from "../_extensions/isms/cli/lib/blocks.ts";
 
-const { baseline } = loadProject();
+const { baseline } = loadProject(fromFileUrl(new URL("../", import.meta.url)));
 
 Deno.test("every block in a baseline source is published in manifest.yml, and vice versa", async (t) => {
   // Never gated on adoption. `blocks:` is the shared artefact's API, so this repo's own decision

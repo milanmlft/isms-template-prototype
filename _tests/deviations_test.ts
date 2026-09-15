@@ -295,7 +295,7 @@ Deno.test("the empty state still renders every section", () => {
   assertContains(out, "{#register}");
 });
 
-Deno.test("an un-adopted entry runs into whatever heading follows it", () => {
+Deno.test("DEFECT, pinned not endorsed: an un-adopted entry swallows the heading after it", () => {
   const out = register({
     manifestOrder: ["ISMS01", "ISMS02"],
     docs: [],

@@ -13,7 +13,7 @@
 // composer are wrong in the same way — the drift argument the CLI's own modules exist to avoid.
 // Options are added when a test needs one, never in advance, for the same reason.
 //
-import { dirname, join } from "stdlib/path";
+import { dirname, fromFileUrl, join } from "stdlib/path";
 import {
   compose,
   type ComposeResult,
@@ -121,7 +121,9 @@ export async function composeIn(root: string): Promise<ComposeResult> {
 export async function runCli(
   root: string,
 ): Promise<{ code: number; stdout: string; stderr: string }> {
-  const cli = new URL("../../_extensions/isms/cli/isms.ts", import.meta.url).pathname;
+  // fromFileUrl, not `.pathname`: the latter leaves percent-encoding in place, so a checkout under
+  // a path containing a space would hand Deno a `%20` that no file matches.
+  const cli = fromFileUrl(new URL("../../_extensions/isms/cli/isms.ts", import.meta.url));
   const cmd = new Deno.Command(Deno.execPath(), {
     args: [
       "run",

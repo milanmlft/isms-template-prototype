@@ -97,9 +97,14 @@ Never hand-edit them. The extension's sidebar picks the documents up via `auto: 
 ### manifest.yml is a public API
 
 The `blocks:` list under each document enumerates the block IDs downstream overrides may target
-by name. Removing or renaming one is a MAJOR release for the baseline. Note the manifest's
-`blocks:` lists are currently declarative only — nothing validates them against the actual
-delimiters in the source documents.
+by name. Removing or renaming one is a MAJOR release for the baseline.
+
+The lists are declarative — the CLI never reads them, and composition neither consults nor enforces
+them. `_tests/manifest_test.ts` is what holds them to the sources, diffing both directions with the
+project's own parser: a block in a source but not in `blocks:` hides an overridable region from
+every adopter, and a `blocks:` entry with no delimiter invites an override composition will reject.
+It lives in the test suite rather than in `compose()` because an adopter's render should not fail
+over a defect only the baseline's maintainer can fix.
 
 ### Block grammar (`lib/blocks.ts`)
 
