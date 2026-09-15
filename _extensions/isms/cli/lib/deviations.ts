@@ -456,17 +456,18 @@ export function renderRegister(input: RegisterInput): string {
   }
 
   if (total === 0) {
-    out.push(
-      `::: {.callout-note}`,
-      docs.length === 0
-        ? `No deviations: this ISMS adopts no baseline document.`
-        : unadopted.length > 0
-          ? `No deviations. Every adopted document is baseline text, unchanged. The documents this ` +
-          `ISMS does not adopt are listed under [Documents not adopted](#not-adopted).`
-          : `No deviations. Every adopted document is baseline text, unchanged.`,
-      `:::`,
-      ``,
-    );
+    out.push(`::: {.callout-note}`);
+    if (docs.length === 0) {
+      out.push(`No deviations: this ISMS adopts no baseline document.`);
+    } else if (unadopted.length > 0) {
+      out.push(
+        `No deviations. Every adopted document is baseline text, unchanged. The documents this ` +
+        `ISMS does not adopt are listed under [Documents not adopted](#not-adopted).`,
+      );
+    } else {
+      out.push(`No deviations. Every adopted document is baseline text, unchanged.`);
+    }
+    out.push(`:::`, ``);
   } else {
     out.push(
       `| Document | Block | Change | Reason | Approved by | Approved | Source |`,

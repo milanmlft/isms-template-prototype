@@ -24,10 +24,8 @@ function writeAll(root: string, files: Map<string, string>): string[] {
 
 /**
  * Mirror the baseline's and the institution's asset files next to the composed documents, so
- * their relative links resolve and Quarto carries them into `_site/`.
- *
- * Compares bytes before writing, for the same reason `writeAll` compares text: a rewritten file
- * is a changed mtime, which is a changed Quarto input, which is a needless re-render.
+ * their relative links resolve and Quarto carries them into `_site/`. Compares bytes before
+ * writing to avoid unnecessary mtime changes (a changed Quarto input causes a needless re-render).
  */
 function copyAssets(root: string, assets: Map<string, Asset>): string[] {
   const copied: string[] = [];
@@ -46,23 +44,15 @@ function copyAssets(root: string, assets: Map<string, Asset>): string[] {
 }
 
 /**
- * Remove anything under `docs/` that this composition did not produce — a document that was
- * un-adopted, an asset dropped from the baseline or an override. The sweep can be this broad
- * because `docs/` is generated output in its entirety, and gitignored: every file in it is either
- * in `keep` or stale. It recurses because assets bring subdirectories with them, and clears
- * directories it empties, so un-adopting the last document that used `images/` does not leave the
- * shell behind.
+ * Remove anything under `docs/` that composition did not produce. Docs/ is generated output,
+ * gitignored, so files are either in `keep` or stale. Recurses to clean empty directories from
+ * nested asset paths without leaving orphaned shells.
  */
 function prune(root: string, keep: Set<string>): string[] {
   const removed: string[] = [];
   const keepFolded = new Set([...keep].map(foldPath));
-  // Returns whether the directory is empty once its own stale entries are gone, so the caller
-  // can remove it; that is only knowable bottom-up.
   const sweep = (rel: string): boolean => {
     let empty = true;
-    // Snapshot first: removing entries while readDirSync is still iterating the same directory
-    // can skip the entry right after the one just removed, which would leave a stale file behind
-    // and make the empty-directory removal below throw.
     for (const e of [...Deno.readDirSync(join(root, rel))]) {
       const childRel = join(rel, e.name);
       if (e.isDirectory) {
@@ -81,8 +71,6 @@ function prune(root: string, keep: Set<string>): string[] {
   try {
     sweep(COMPOSED_DIR);
   } catch (err) {
-    // A docs/ that does not exist yet is the first-run case. Anything else is a real filesystem
-    // problem, and reading it as "nothing to prune" would hide it.
     if (!(err instanceof Deno.errors.NotFound)) throw err;
   }
   return removed;
@@ -101,9 +89,6 @@ async function run(): Promise<number> {
   const overrides = result.docs.reduce((n, d) => n + d.deviations.length, 0);
   const localAssets = [...result.assets.values()].filter((a) => a.origin === "override").length;
   const localAssetsNote = localAssets > 0 ? ` (${localAssets} local)` : "";
-  // Yellow, like the prune line: both report something absent that a reader might expect to be
-  // there. An un-adoption is the largest deviation the system permits, so it belongs on every
-  // render rather than only in the register.
   const notAdopted = result.unadopted.length > 0
     ? ` · ${yellow(String(result.unadopted.length))} not adopted`
     : "";
@@ -119,15 +104,12 @@ async function run(): Promise<number> {
   }
   console.log(dim(`         ${DEVIATIONS_PATH} (${overrides} deviation${overrides === 1 ? "" : "s"})`));
 
-  // Before the prune stanza, so the first render after un-adopting reads as cause and effect:
-  // "1 document not adopted" immediately above "pruned docs/ISMS08-….qmd".
   if (result.unadopted.length > 0) {
     console.log(
       `[isms] ${yellow(String(result.unadopted.length))} document` +
       `${result.unadopted.length === 1 ? "" : "s"} not adopted (${ISMS_CONFIG_PATH})`,
     );
     for (const doc of result.unadopted) {
-      // The reason is free prose and may run to a paragraph; the register carries it in full.
       const why = doc.reason.replace(/\s+/g, " ").trim();
       const short = why.length > 96 ? `${why.slice(0, 95)}…` : why;
       console.log(dim(`         ${doc.ismsId} · ${short}`));

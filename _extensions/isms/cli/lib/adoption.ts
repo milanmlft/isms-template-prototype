@@ -40,17 +40,15 @@ export interface Adoption {
 }
 
 export function loadAdoption(root: string, baseline: Baseline): Adoption {
-  const empty: Adoption = { unadopted: new Map(), warnings: [] };
   const manifest = baseline.manifest;
-  const rel = ISMS_CONFIG_PATH;
-  const path = join(root, rel);
+  const path = join(root, ISMS_CONFIG_PATH);
 
   let src: string;
   try {
     src = Deno.readTextFileSync(path);
   } catch (err) {
     // No `_isms.yml` at all is the normal case: most institutions adopt the whole baseline.
-    if (err instanceof Deno.errors.NotFound) return empty;
+    if (err instanceof Deno.errors.NotFound) return { unadopted: new Map(), warnings: [] };
     throw err;
   }
 
@@ -72,7 +70,7 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
   }
 
   const raw = parsed.documents;
-  if (raw === undefined || raw === null) return empty;
+  if (raw === undefined || raw === null) return { unadopted: new Map(), warnings: [] };
   if (!isMapping(raw)) {
     throw new Error(
       `${path}: \`documents:\` must be a mapping of ISMS IDs to their adoption status, not ` +
@@ -81,7 +79,7 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
   }
 
   const specs = new Map(manifest.documents.map((d) => [d.id, d]));
-  const declined = new Map<string, Omit<UnadoptedDoc, "ismsId" | "title" | "baselineSource">>();
+  const declined = new Map<string, Omit<UnadoptedDoc, "ismsId" | "title">>();
 
   // Iterate the FILE's keys, not the manifest's: an ID that is in neither is the typo this loop
   // exists to catch, and it can only be seen from this side.
@@ -113,7 +111,7 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
     if (adopted === undefined) {
       throw new Error(
         `${path}: \`documents.${id}\` has no \`adopted:\` key. Write \`adopted: false\` to un-adopt this ` +
-        `document; a document with no entry in ${rel} is adopted.`,
+        `document; a document with no entry in ${ISMS_CONFIG_PATH} is adopted.`,
       );
     }
     if (typeof adopted !== "boolean") {
@@ -162,7 +160,7 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
     };
     unadopted.set(spec.id, doc);
     warnings.push(
-      ...governanceGaps(rel, `un-adoption of ${spec.id}`, doc, [
+      ...governanceGaps(ISMS_CONFIG_PATH, `un-adoption of ${spec.id}`, doc, [
         "approved-by",
         "approved-date",
       ]),
@@ -171,9 +169,6 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
   return { unadopted, warnings };
 }
 
-/**
- * Read a governance attribute as text.
- */
 function attrText(
   path: string,
   keyPath: readonly string[],
