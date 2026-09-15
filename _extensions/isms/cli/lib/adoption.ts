@@ -7,7 +7,7 @@
 // written.
 
 import { parse as parseYaml } from "stdlib/yaml";
-import { join, relative } from "stdlib/path";
+import { join } from "stdlib/path";
 import type { Baseline } from "./project.ts";
 import { governanceGaps } from "./deviations.ts";
 
@@ -30,9 +30,6 @@ export interface UnadoptedDoc {
   reason: string;
   approvedBy?: string;
   approvedDate?: string;
-  source: string;
-  /** Project-relative path of the baseline source, cited (never linked) in the register. */
-  baselineSource: string;
 }
 
 export interface Adoption {
@@ -120,23 +117,16 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
       );
     }
     if (typeof adopted !== "boolean") {
-      const hint = typeof adopted === "string" && /^(yes|no|on|off)$/i.test(adopted)
-        ? ` (YAML reads \`${adopted}\` here as the text "${adopted}", not as a boolean.)`
-        : "";
       throw new Error(
-        `${path}: \`documents.${id}.adopted\` must be \`true\` or \`false\`, not ${describe(adopted)}.${hint}`,
+        `${path}: \`documents.${id}.adopted\` must be \`true\` or \`false\`, not ${describe(adopted)}`,
       );
     }
-    // Recording a reviewed decision to adopt is legitimate, and lets an institution turn a
-    // document back on by changing one word rather than deleting a governed entry.
     if (adopted) continue;
 
     const reason = attrText(path, ["documents", id, "reason"], entry.reason);
     if (reason === undefined || reason.trim() === "") {
       throw new Error(
-        `${path}: \`documents.${id}\` un-adopts ${id} but gives no \`reason:\`. An un-adopted document ` +
-        `leaves no trace in the composed site, so the deviations register is the only record ` +
-        `of the decision.`,
+        `${path}: \`documents.${id}\` un-adopts ${id} but gives no \`reason:\`.`
       );
     }
 
@@ -144,7 +134,6 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
       reason,
       approvedBy: attrText(path, ["documents", id, "approved-by"], entry["approved-by"]),
       approvedDate: attrText(path, ["documents", id, "approved-date"], entry["approved-date"]),
-      source: rel,
     });
   }
 
@@ -155,7 +144,7 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
     throw new Error(
       `${path}: every document in baseline ${manifest.baseline_version} is un-adopted ` +
       `(${[...specs.keys()].join(", ")}), leaving no controlled documents to publish. Quarto ` +
-      `cannot build a site whose sidebar glob matches nothing, so an ISMS must adopt at least one.`,
+      `needs at least one document to render`,
     );
   }
 
@@ -169,12 +158,11 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
     const doc: UnadoptedDoc = {
       ismsId: spec.id,
       title: spec.title,
-      baselineSource: relative(root, join(baseline.dir, spec.file)),
       ...entry,
     };
     unadopted.set(spec.id, doc);
     warnings.push(
-      ...governanceGaps(rel, `un-adoption of ${spec.id}`, doc.line, doc, [
+      ...governanceGaps(rel, `un-adoption of ${spec.id}`, doc, [
         "approved-by",
         "approved-date",
       ]),
@@ -185,12 +173,6 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
 
 /**
  * Read a governance attribute as text.
- *
- * `approved-date: 2026-09-01` parses to a JS `Date` under YAML's default schema — exactly as it
- * does in override front matter — and would otherwise reach the register as a UTC timestamp.
- * Coerced by the same rule `normaliseDates()` uses. The format is not validated beyond that: the
- * override attribute is free text today, and making `_isms.yml` stricter would split one
- * governance convention into two.
  */
 function attrText(
   path: string,

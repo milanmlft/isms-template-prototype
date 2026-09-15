@@ -203,7 +203,7 @@ export function collectDeviations(
  * exists to expose, so the CLI names each gap with a file:line the author can go and fix.
  */
 export function governanceWarnings(source: string, deviations: readonly Deviation[]): string[] {
-  return deviations.flatMap((d) => governanceGaps(source, `override "${d.blockId}"`, d.line, d));
+  return deviations.flatMap((d) => governanceGaps(source, `override "${d.blockId}"`, d));
 }
 
 export type GovernanceAttr = "reason" | "approved-by" | "approved-date";
@@ -218,7 +218,6 @@ export type GovernanceAttr = "reason" | "approved-by" | "approved-date";
 export function governanceGaps(
   source: string,
   subject: string,
-  line: number,
   meta: { reason?: string; approvedBy?: string; approvedDate?: string },
   attrs: readonly GovernanceAttr[] = ["reason", "approved-by", "approved-date"],
 ): string[] {
@@ -231,7 +230,7 @@ export function governanceGaps(
   for (const attr of attrs) {
     const value = values[attr];
     if (value === undefined || value.trim() === "") {
-      gaps.push(`${source}:${line}: ${subject} has no ${attr}`);
+      gaps.push(`${source}: ${subject} has no ${attr}`);
     }
   }
   return gaps;
@@ -388,12 +387,12 @@ export function renderRegister(input: RegisterInput): string {
     out.push(
       docs.length === 0
         ? `**None of the ${manifestOrder.length} documents in baseline version ` +
-          `\`${baselineVersion}\` is adopted.** Each is listed under ` +
-          `[Documents not adopted](#not-adopted) with the reason recorded against it.`
+        `\`${baselineVersion}\` is adopted.** Each is listed under ` +
+        `[Documents not adopted](#not-adopted) with the reason recorded against it.`
         : `**${unadopted.length} of the ${manifestOrder.length} baseline documents ` +
-          `${unadopted.length === 1 ? "is" : "are"} not adopted.** See ` +
-          `[Documents not adopted](#not-adopted) for the reason recorded against ` +
-          `${unadopted.length === 1 ? "it" : "each"}.`,
+        `${unadopted.length === 1 ? "is" : "are"} not adopted.** See ` +
+        `[Documents not adopted](#not-adopted) for the reason recorded against ` +
+        `${unadopted.length === 1 ? "it" : "each"}.`,
       ``,
     );
   }
@@ -447,20 +446,8 @@ export function renderRegister(input: RegisterInput): string {
       out.push(
         `### ${u.ismsId} · ${flatten(u.title)} {#${unadoptedAnchor(u.ismsId)}}`,
         ``,
-        `Not adopted · approved by ${cell(u.approvedBy)} on ${cell(u.approvedDate)} · ` +
-        `\`${href(u.source)}:${u.line}\``,
-        ``,
-        // cell() even though the loader makes `reason` mandatory: if that rule is ever relaxed,
-        // the page should say so in the same words it uses everywhere else, not render a
-        // dangling label.
+        `Not adopted · approved by ${cell(u.approvedBy)} on ${cell(u.approvedDate)}.`,
         `**Reason:** ${cell(u.reason)}`,
-        ``,
-        // A mode=delete is quoted because the removed text exists nowhere else in the output.
-        // An un-adopted document's source still ships inside the vendored baseline, so it is
-        // cited instead — as inline code, never as a link, for the reason given above.
-        `The baseline text is not reproduced here: it ships with the vendored baseline at ` +
-        `\`${href(u.baselineSource)}\`.`,
-        ``,
       );
     }
     out.push(`## Register {#register}`, ``);
@@ -474,9 +461,9 @@ export function renderRegister(input: RegisterInput): string {
       docs.length === 0
         ? `No deviations: this ISMS adopts no baseline document.`
         : unadopted.length > 0
-        ? `No deviations. Every adopted document is baseline text, unchanged. The documents this ` +
+          ? `No deviations. Every adopted document is baseline text, unchanged. The documents this ` +
           `ISMS does not adopt are listed under [Documents not adopted](#not-adopted).`
-        : `No deviations. Every adopted document is baseline text, unchanged.`,
+          : `No deviations. Every adopted document is baseline text, unchanged.`,
       `:::`,
       ``,
     );

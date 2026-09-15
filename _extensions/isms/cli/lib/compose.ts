@@ -20,7 +20,7 @@ import {
   governanceWarnings,
   renderRegister,
 } from "./deviations.ts";
-import { loadAdoption, type UnadoptedDoc } from "./adoption.ts";
+import { ISMS_CONFIG_PATH, loadAdoption, type UnadoptedDoc } from "./adoption.ts";
 
 export const COMPOSED_DIR = "docs";
 /**
@@ -111,9 +111,7 @@ export async function compose(project: Project): Promise<ComposeResult> {
 
   for (const spec of baseline.manifest.documents) {
     if (adoption.unadopted.has(spec.id)) {
-      // Nothing is emitted, so nothing enters `files`, and prune() sweeps any output a previous
-      // render left behind. The baseline source is never even read.
-      assertNoOverrideFor(root, spec, adoption.unadopted.get(spec.id)!);
+      assertNoOverrideFor(root, spec);
       continue;
     }
     const baselinePath = join(baseline.dir, spec.file);
@@ -231,7 +229,7 @@ export async function compose(project: Project): Promise<ComposeResult> {
  * someone has formally approved is the worst outcome available. A plain Error rather than a
  * ParseError because two positions are involved, as with the asset collisions above.
  */
-function assertNoOverrideFor(root: string, spec: DocumentSpec, unadopted: UnadoptedDoc): void {
+function assertNoOverrideFor(root: string, spec: DocumentSpec): void {
   const rel = join(OVERRIDES_DIR, `${spec.id}.qmd`);
   try {
     Deno.statSync(join(root, rel));
@@ -240,10 +238,9 @@ function assertNoOverrideFor(root: string, spec: DocumentSpec, unadopted: Unadop
     throw err;
   }
   throw new Error(
-    `${rel} overrides ${spec.id}, which ${unadopted.source} un-adopts, so ` +
+    `${rel} overrides ${spec.id}, which ${ISMS_CONFIG_PATH} un-adopts, so ` +
     `nothing in it could ever reach the composed output. Delete it, move it outside ` +
-    `${OVERRIDES_DIR}/, or re-adopt the document. Do not merely rename it: any non-.qmd file ` +
-    `under ${OVERRIDES_DIR}/ is mirrored into ${COMPOSED_DIR}/ as an asset.`,
+    `${OVERRIDES_DIR}/, or re-adopt the document.`
   );
 }
 
@@ -346,7 +343,7 @@ function danglingLinkWarnings(
           `or redirect the link.`;
         warnings.push(
           `${doc.path}:${i + 1}: links to ${hit.ismsId} ("${href}"), which ` +
-          `${hit.source} un-adopts. ${fix}`,
+          `${ISMS_CONFIG_PATH} un-adopts. ${fix}`,
         );
       }
     }
