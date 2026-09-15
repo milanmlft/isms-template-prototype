@@ -10,7 +10,7 @@
 # EXAMPLE VALUES, REPLACE ME.
 documents:
   ISMS08:
-    adopted: false
+    adopted: true
     reason: >-
       Change management for the {{< var environment_abbr >}} is governed by the central IT
       change process, which is audited separately under the same certification.
