@@ -6,20 +6,27 @@
 // the demo project uses either, so "Added before", "Removed" and the delete branch that quotes the
 // removed baseline text shipped unexercised.
 //
-import { composeIn, project } from "./support/fixture.ts";
+import { composeIn, type FixtureSpec, project, SCOPE_BLOCK } from "./support/fixture.ts";
 import { assertContains, assertEquals, assertMissing, assertThrowsWith } from "./support/assert.ts";
-import { emit, parseDocument, parseOverrides } from "../_extensions/isms/cli/lib/blocks.ts";
+import {
+  emit,
+  type OverrideMode,
+  parseDocument,
+  parseOverrides,
+} from "../_extensions/isms/cli/lib/blocks.ts";
 import {
   collectDeviations,
+  DEVIATIONS_PATH,
+  type RegisterInput,
   renderRegister,
   unadoptedAnchor,
 } from "../_extensions/isms/cli/lib/deviations.ts";
 
 /** The register for a fixture, with `composeIn`'s structural invariants already run over it. */
-async function registerFor(spec: Parameters<typeof project>[0]): Promise<string> {
+async function registerFor(spec: FixtureSpec): Promise<string> {
   const result = await composeIn(project(spec));
-  const register = result.files.get("deviations.qmd");
-  if (register === undefined) throw new Error("no deviations.qmd in the composed file set");
+  const register = result.files.get(DEVIATIONS_PATH);
+  if (register === undefined) throw new Error(`no ${DEVIATIONS_PATH} in the composed file set`);
   return register;
 }
 
@@ -30,7 +37,6 @@ const DOC_PATH = "docs/ISMS01-access-control.qmd";
 function accessDoc(childBody: string) {
   return {
     title: "Access Control",
-    blocks: ["access", "access.chain"],
     body: "<!-- isms:begin id=access -->\n" +
       "## Access {#sec-access}\n\n" +
       "Baseline intro.\n\n" +
@@ -42,12 +48,7 @@ function accessDoc(childBody: string) {
 }
 
 Deno.test("the register is generated even with no deviations at all", async () => {
-  const result = await composeIn(
-    project({ docs: { ISMS01: "<!-- isms:begin id=scope -->\nbase\n<!-- isms:end id=scope -->" } }),
-  );
-  const register = result.files.get("deviations.qmd");
-  if (register === undefined) throw new Error("no deviations.qmd in the composed file set");
-  assertContains(register, "Coverage");
+  assertContains(await registerFor({ docs: { ISMS01: SCOPE_BLOCK } }), "Coverage");
 });
 
 // --- Anchor precedence: the three-way rule -----------------------------------------------------
@@ -140,20 +141,24 @@ Deno.test("a block whose emitted marker range is missing is refused rather than 
 
 // --- All four override modes -------------------------------------------------------------------
 
-const MODE_LABEL = {
+// Typed against the CLI's own OverrideMode rather than spelled freely, so a fifth mode added to
+// OVERRIDE_MODES is a COMPILE error here — `deno test` type-checks, which is the whole reason
+// _tests/run.ts exists — rather than a silent coverage hole where the loop keeps covering four.
+// The label strings stay written out: they are the published contract, and importing the register's
+// own private MODE_LABEL would make the assertion tautological.
+const MODE_LABEL: Record<OverrideMode, string> = {
   replace: "Replaced",
   before: "Added before",
   after: "Added after",
   delete: "Removed",
-} as const;
+};
 
-for (const mode of ["replace", "before", "after", "delete"] as const) {
+for (const [mode, label] of Object.entries(MODE_LABEL) as [OverrideMode, string][]) {
   Deno.test(`mode=${mode} is reported in the register under its own label`, async () => {
     const register = await registerFor({
       docs: {
         ISMS01: {
           title: "Access Control",
-          blocks: ["scope"],
           body: "<!-- isms:begin id=scope -->\n## Scope {#sec-scope}\n\nBaseline scope text.\n" +
             "<!-- isms:end id=scope -->",
         },
@@ -167,8 +172,9 @@ for (const mode of ["replace", "before", "after", "delete"] as const) {
     });
 
     // The row's Change cell is the label linked to its detail section, so one assertion pins both.
-    assertContains(register, `[${MODE_LABEL[mode]}](#dev-isms01-scope)`);
-    assertContains(register, "### ISMS01 · `scope` {#dev-isms01-scope}");
+    const detail = "#dev-isms01-scope";
+    assertContains(register, `[${label}](${detail})`);
+    assertContains(register, `### ISMS01 · \`scope\` {${detail}}`);
     assertContains(register, "**Reason:** r");
     assertContains(register, "approved by A on 2026-01-01");
 
@@ -255,29 +261,34 @@ Deno.test("the register never links to a path Quarto does not render", async () 
 });
 
 // --- renderRegister, called directly ------------------------------------------------------------
+//
+// `renderRegister` takes one plain data object and returns a string — no filesystem anywhere in its
+// reach — so these cases need no fixture at all. `register()` supplies only the fields every call
+// would otherwise repeat; each test overrides what it is actually about.
+
+const FIRST_DOC = { ismsId: "ISMS01", title: "First", path: "docs/ISMS01-first.qmd", deviations: [] };
+
+function register(over: Partial<RegisterInput>): string {
+  return renderRegister({
+    banner: "<!-- DO NOT EDIT BY HAND -->",
+    baselineVersion: "9.9.9",
+    manifestOrder: ["ISMS01"],
+    docs: [FIRST_DOC],
+    unadopted: [],
+    ...over,
+  });
+}
 
 Deno.test("a manifest document that is neither composed nor un-adopted is refused", () => {
   assertThrowsWith(
     () =>
-      renderRegister({
-        banner: "<!-- DO NOT EDIT BY HAND -->",
-        baselineVersion: "9.9.9",
-        manifestOrder: ["ISMS01", "ISMS02"],
-        docs: [{ ismsId: "ISMS01", title: "First", path: "docs/ISMS01-first.qmd", deviations: [] }],
-        unadopted: [],
-      }),
+      register({ manifestOrder: ["ISMS01", "ISMS02"] }),
     "ISMS02",
   );
 });
 
 Deno.test("the empty state still renders every section", () => {
-  const out = renderRegister({
-    banner: "<!-- DO NOT EDIT BY HAND -->",
-    baselineVersion: "9.9.9",
-    manifestOrder: ["ISMS01"],
-    docs: [{ ismsId: "ISMS01", title: "First", path: "docs/ISMS01-first.qmd", deviations: [] }],
-    unadopted: [],
-  });
+  const out = register({});
   // `renderRegister` has exactly one return: the old `total === 0` early return sat mid-page and
   // silently dropped every section below it.
   assertContains(out, "{#coverage}");
@@ -285,9 +296,7 @@ Deno.test("the empty state still renders every section", () => {
 });
 
 Deno.test("an un-adopted entry runs into whatever heading follows it", () => {
-  const out = renderRegister({
-    banner: "<!-- DO NOT EDIT BY HAND -->",
-    baselineVersion: "9.9.9",
+  const out = register({
     manifestOrder: ["ISMS01", "ISMS02"],
     docs: [],
     unadopted: [
@@ -306,11 +315,8 @@ Deno.test("an un-adopted entry runs into whatever heading follows it", () => {
 });
 
 Deno.test("an un-adopted document still gets its section when there are no block deviations", () => {
-  const out = renderRegister({
-    banner: "<!-- DO NOT EDIT BY HAND -->",
-    baselineVersion: "9.9.9",
+  const out = register({
     manifestOrder: ["ISMS01", "ISMS02"],
-    docs: [{ ismsId: "ISMS01", title: "First", path: "docs/ISMS01-first.qmd", deviations: [] }],
     unadopted: [{ ismsId: "ISMS02", title: "Second", reason: "r", approvedBy: "A" }],
   });
   // The state an early return would have hidden: nothing overridden, one document dropped.

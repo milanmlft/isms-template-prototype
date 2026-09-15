@@ -33,26 +33,13 @@ export function assertMatch(haystack: string, re: RegExp, msg?: string): void {
 }
 
 /**
- * Assert `fn` throws, and that every needle appears in the message. Returns the error, so a caller
- * can make further assertions on it.
+ * The needle contract, defined once for both helpers below.
  *
  * Needles are identifiers, lists and numbers — never sentences. An error's prose should be free to
- * improve without turning the suite red; what the message PROMISES is the contract worth pinning:
- * that it names the offending id, that it lists the ids that do exist, that it cites a line.
+ * improve without turning the suite red; what the message PROMISES is what is worth pinning: that
+ * it names the offending id, that it lists the ids that do exist, that it cites a line.
  */
-export function assertThrowsWith(fn: () => unknown, ...needles: string[]): Error {
-  let thrown: unknown;
-  let returned: unknown;
-  let threw = false;
-  try {
-    returned = fn();
-  } catch (err) {
-    thrown = err;
-    threw = true;
-  }
-  if (!threw) {
-    throw new Error(`expected a throw, got none (returned ${JSON.stringify(returned)?.slice(0, 200)})`);
-  }
+function withNeedles(thrown: unknown, needles: readonly string[]): Error {
   const err = thrown instanceof Error ? thrown : new Error(String(thrown));
   for (const needle of needles) {
     assertContains(err.message, needle, `error message lacks "${needle}"`);
@@ -60,23 +47,29 @@ export function assertThrowsWith(fn: () => unknown, ...needles: string[]): Error
   return err;
 }
 
+/**
+ * Assert `fn` throws, and that every needle appears in the message. Returns the error, so a caller
+ * can make further assertions on it.
+ */
+export function assertThrowsWith(fn: () => unknown, ...needles: string[]): Error {
+  let returned: unknown;
+  try {
+    returned = fn();
+  } catch (err) {
+    return withNeedles(err, needles);
+  }
+  throw new Error(`expected a throw, got none (returned ${JSON.stringify(returned)?.slice(0, 200)})`);
+}
+
 /** The async twin, for `compose()` — which is declared async even though it never awaits. */
 export async function assertRejectsWith(
   fn: () => Promise<unknown>,
   ...needles: string[]
 ): Promise<Error> {
-  let thrown: unknown;
-  let threw = false;
   try {
     await fn();
   } catch (err) {
-    thrown = err;
-    threw = true;
+    return withNeedles(err, needles);
   }
-  if (!threw) throw new Error(`expected a rejection, got none`);
-  const err = thrown instanceof Error ? thrown : new Error(String(thrown));
-  for (const needle of needles) {
-    assertContains(err.message, needle, `error message lacks "${needle}"`);
-  }
-  return err;
+  throw new Error(`expected a rejection, got none`);
 }

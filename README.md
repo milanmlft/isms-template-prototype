@@ -368,28 +368,28 @@ For maintainers of the baseline itself.
 ### Verification
 
 ```shell
-quarto run _tests/typecheck.ts                      # type-check the CLI
-quarto run _tests/run.ts                            # unit + fixture tests
-quarto render && quarto run _tests/run.ts --site    # ... plus checks on the real output
+quarto run _tests/run.ts          # the tests
+quarto run _tests/typecheck.ts    # type-check isms.ts, which no test imports
 ```
 
 The suite needs no toolchain beyond the one requirement above: it runs on the Deno that ships
 inside Quarto, resolves imports through Quarto's own import map, and fetches nothing from the
-network. CI runs it on every pull request.
+network. Nothing depends on a render having happened, so both commands work from a fresh clone. CI
+runs them on every pull request.
 
-Two kinds of test live there. Most build throwaway ISMS projects in temporary directories and drive
-the composition CLI against them, which is how the fail-loud paths — an override on a block that
-does not exist, an override shadowed by a replaced parent, a missing `reason` on an un-adoption —
-are exercised. The `--site` tiers instead compare this repo's own composed output and rendered site
-against the composer, which catches a document hand-edited under the `DO NOT EDIT BY HAND` banner,
-a tree that was never re-rendered, or output that outlived its manifest entry.
+Almost every test builds a throwaway ISMS project in a temporary directory and drives the
+composition CLI against it, which is how the fail-loud paths — an override on a block that does not
+exist, an override shadowed by a replaced parent, a missing `reason` on an un-adoption — are
+exercised. A complete fixture project is three files and composes in about 15 ms, so each case gets
+its own.
 
-Note that `quarto run` does **not** type-check — it is `deno run` underneath — so
-`_tests/typecheck.ts` is the only thing standing between a type error in the CLI and a composed
-document containing whatever the broken expression evaluated to.
+Note that `quarto render` does **not** type-check — it is `deno run` underneath — so a type error in
+the CLI reaches the composed document as whatever the broken expression evaluated to. Running the
+tests covers most of it, because `deno test` type-checks and the tests import every module under
+`cli/lib/`; `_tests/typecheck.ts` covers `cli/isms.ts`, which nothing imports.
 
-See `_tests/README.md` for the tiers, the house rules for adding cases, and an honest list of what
-the suite does not cover.
+See `_tests/README.md` for the house rules on adding cases, and an honest list of what the suite
+does not cover.
 
 ### Block grammar
 

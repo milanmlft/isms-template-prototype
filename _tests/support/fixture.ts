@@ -2,28 +2,38 @@
 // Fixture projects, written into temp dirs.
 //
 // `compose()` is read-only and takes its root from the `Project` it is handed — nothing reads
-// `Deno.cwd()` — so a complete ISMS project is three files and a full compose takes ~35ms with no
-// Quarto process involved. That is what makes per-case fixtures affordable, and per-case fixtures
-// are what let the suite provoke the fail-loud paths the standing verification pass never reached.
+// `Deno.cwd()` — so a complete ISMS project is three files and a full compose takes about 15ms with
+// no Quarto process involved. That is what makes per-case fixtures affordable, and per-case
+// fixtures are what let the suite provoke the fail-loud paths the standing verification pass never
+// reached.
 //
 // THE BUILDER IS A DUMB FILE WRITER with defaults. It must never synthesise a manifest from the
 // docs it is handed, and must never compute a composed filename's slug. The moment it does either,
 // it is a second composer with its own bugs, and a test can pass because the builder and the
 // composer are wrong in the same way — the drift argument the CLI's own modules exist to avoid.
+// Options are added when a test needs one, never in advance, for the same reason.
 //
 import { dirname, join } from "stdlib/path";
-import { compose } from "../../_extensions/isms/cli/lib/compose.ts";
+import {
+  compose,
+  type ComposeResult,
+  COMPOSED_DIR,
+} from "../../_extensions/isms/cli/lib/compose.ts";
 import { loadProject } from "../../_extensions/isms/cli/lib/project.ts";
-import type { ComposeResult } from "../../_extensions/isms/cli/lib/compose.ts";
+import { DEVIATIONS_PATH } from "../../_extensions/isms/cli/lib/deviations.ts";
 import { assertWellFormed } from "./invariants.ts";
+import { DENO_BASE_FLAGS, quartoImportMap } from "./quarto.ts";
+
+/** One block, no heading — the inert body for a test that is about something else entirely. */
+export const SCOPE_BLOCK = "<!-- isms:begin id=scope -->\nbase\n<!-- isms:end id=scope -->";
+
+/** The same, with an explicit anchor, for tests about deep links or composed page structure. */
+export const ANCHORED_SCOPE_BLOCK =
+  "<!-- isms:begin id=scope -->\n## Scope {#sec-scope}\n\nbase\n<!-- isms:end id=scope -->";
 
 export interface DocSpec {
   /** Manifest title. Defaults to the id. The composed filename is `<id>-<slug(title)>.qmd`. */
   title?: string;
-  /** Path under the baseline, relative to `_extensions/isms/`. Defaults to `docs/<id>.qmd`. */
-  file?: string;
-  /** Manifest `blocks:` list. Declarative only — the CLI never reads it. Defaults to none. */
-  blocks?: string[];
   /** Front matter WITHOUT the `---` fences. Defaults to `isms-id` + `title`. */
   frontMatter?: string;
   /** Markdown body, verbatim. */
@@ -31,7 +41,6 @@ export interface DocSpec {
 }
 
 export interface FixtureSpec {
-  baselineVersion?: string;
   /** Baseline documents, keyed on ISMS ID. A bare string is shorthand for `{ body }`. */
   docs: Record<string, string | DocSpec>;
   /** `_overrides/<ID>.qmd` contents, verbatim. */
@@ -40,9 +49,10 @@ export interface FixtureSpec {
   adoption?: string;
   /** Extra files, keyed on a path relative to the project root. Use for assets. */
   assets?: Record<string, Uint8Array>;
-  /** `_extensions/isms/docs/_preamble.qmd`. Defaults to a one-liner. */
-  preamble?: string;
 }
+
+/** Every fixture manifest declares this, and several error messages quote it back. */
+const BASELINE_VERSION = "9.9.9";
 
 function write(path: string, content: string | Uint8Array): void {
   Deno.mkdirSync(dirname(path), { recursive: true });
@@ -55,27 +65,25 @@ export function project(spec: FixtureSpec): string {
   const root = Deno.makeTempDirSync({ prefix: "isms-fixture-" });
   const baseline = join(root, "_extensions", "isms");
 
+  // No `blocks:` is emitted. The list is declarative — the CLI never reads it — so writing one into
+  // a fixture manifest would suggest an effect it does not have. It is validated against the real
+  // baseline sources in manifest_test.ts, which is the only place it means anything.
   const entries: string[] = [];
   for (const [id, raw] of Object.entries(spec.docs)) {
     const doc: DocSpec = typeof raw === "string" ? { body: raw } : raw;
     const title = doc.title ?? id;
-    const file = doc.file ?? `docs/${id}.qmd`;
+    const file = `${COMPOSED_DIR}/${id}.qmd`;
     const frontMatter = doc.frontMatter ?? `isms-id: ${id}\ntitle: "${title}"`;
     write(join(baseline, file), `---\n${frontMatter}\n---\n\n${doc.body}\n`);
-
-    const blocks = (doc.blocks ?? []).map((b) => `      - ${b}`).join("\n");
-    entries.push(
-      `  - id: ${id}\n    file: ${file}\n    title: "${title}"` +
-        (blocks ? `\n    blocks:\n${blocks}` : ""),
-    );
+    entries.push(`  - id: ${id}\n    file: ${file}\n    title: "${title}"`);
   }
 
   write(
     join(baseline, "manifest.yml"),
-    `baseline_version: ${spec.baselineVersion ?? "9.9.9"}\ndocuments:\n${entries.join("\n")}\n`,
+    `baseline_version: ${BASELINE_VERSION}\ndocuments:\n${entries.join("\n")}\n`,
   );
   // Mandatory: compose() reads it by hard-coded path and refuses to compose a baseline without one.
-  write(join(baseline, "docs", "_preamble.qmd"), spec.preamble ?? "*preamble*\n");
+  write(join(baseline, COMPOSED_DIR, "_preamble.qmd"), "*preamble*\n");
 
   for (const [id, body] of Object.entries(spec.overrides ?? {})) {
     write(join(root, "_overrides", `${id}.qmd`), body);
@@ -89,15 +97,15 @@ export function project(spec: FixtureSpec): string {
 /**
  * Compose a fixture, asserting the structural invariants on every composed document as it goes.
  *
- * Running the invariants here rather than per-test means a malformed marker cannot slip through on
- * a document whose own test happened to be about something else.
+ * Running them here rather than per-test means a malformed marker cannot slip through on a document
+ * whose own test happened to be about something else.
  */
 export async function composeIn(root: string): Promise<ComposeResult> {
   const result = await compose(loadProject(root));
   for (const [rel, content] of result.files) {
     // The register is a report about the controlled documents, not one of them, and `_`-prefixed
     // files are shared includes Quarto never renders. Neither carries a banner of its own.
-    if (rel === "deviations.qmd" || rel.startsWith("docs/_")) continue;
+    if (rel === DEVIATIONS_PATH || rel.startsWith(`${COMPOSED_DIR}/_`)) continue;
     assertWellFormed(rel, content);
   }
   return result;
@@ -113,17 +121,14 @@ export async function composeIn(root: string): Promise<ComposeResult> {
 export async function runCli(
   root: string,
 ): Promise<{ code: number; stdout: string; stderr: string }> {
-  const denoDir = Deno.env.get("DENO_DIR");
-  if (denoDir === undefined) throw new Error("no DENO_DIR — run the suite through _tests/run.ts");
   const cli = new URL("../../_extensions/isms/cli/isms.ts", import.meta.url).pathname;
   const cmd = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--import-map",
-      join(denoDir, "..", "run_import_map.json"),
+      quartoImportMap(),
       "--cached-only",
-      "--no-config",
-      "--no-lock",
+      ...DENO_BASE_FLAGS,
       "--allow-all",
       cli,
     ],

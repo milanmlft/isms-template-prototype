@@ -14,10 +14,8 @@
 //
 import { join } from "stdlib/path";
 import { existsSync } from "stdlib/fs";
-import { project, runCli } from "./support/fixture.ts";
+import { ANCHORED_SCOPE_BLOCK, project, runCli } from "./support/fixture.ts";
 import { assertContains, assertEquals } from "./support/assert.ts";
-
-const SCOPE_BLOCK = "<!-- isms:begin id=scope -->\n## Scope {#sec-scope}\n\nbase\n<!-- isms:end id=scope -->";
 
 /** Fail with the subprocess's own output, which is more specific than any assertion here. */
 async function runOk(root: string): Promise<string> {
@@ -28,31 +26,27 @@ async function runOk(root: string): Promise<string> {
 
 Deno.test("the CLI writes composed documents, the preamble, assets and the register", async () => {
   const root = project({
-    docs: { ISMS01: { title: "First Policy", body: SCOPE_BLOCK } },
+    docs: { ISMS01: { title: "First Policy", body: ANCHORED_SCOPE_BLOCK } },
     assets: { "_extensions/isms/docs/images/pic.png": new Uint8Array([137, 80, 78, 71]) },
   });
   await runOk(root);
 
   Deno.statSync(join(root, "docs", "ISMS01-first-policy.qmd"));
   Deno.statSync(join(root, "docs", "_preamble.qmd"));
+  // This fixture has no overrides and no `_isms.yml`, so it is also the zero-deviation case: the
+  // register is written unconditionally, which keeps the static navbar href from dangling and is
+  // what makes it safe for the page to sit outside writeAll's prune scope. Its CONTENT in that
+  // state is asserted in-process by deviations_test.ts, at a fraction of a subprocess.
   Deno.statSync(join(root, "deviations.qmd"));
   // Assets are carried by reference rather than through the composed file set, so they need their
   // own assertion — and a byte one: a missing image is a broken figure in a controlled document.
   assertEquals([...Deno.readFileSync(join(root, "docs", "images", "pic.png"))], [137, 80, 78, 71]);
 });
 
-Deno.test("the register is written even when there is nothing to report", async () => {
-  // Unconditionally, which is what keeps the static navbar href from dangling and what puts the
-  // page outside writeAll's prune scope safely.
-  const root = project({ docs: { ISMS01: SCOPE_BLOCK } });
-  await runOk(root);
-  assertContains(Deno.readTextFileSync(join(root, "deviations.qmd")), "Coverage");
-});
-
 Deno.test("a second run does not rewrite a file whose content has not changed", async () => {
   // Writing unconditionally would mean git churn and a changed Quarto input on every render, which
   // is also why the register carries no generation timestamp.
-  const root = project({ docs: { ISMS01: SCOPE_BLOCK } });
+  const root = project({ docs: { ISMS01: ANCHORED_SCOPE_BLOCK } });
   await runOk(root);
 
   const doc = join(root, "docs", "ISMS01-isms01.qmd");
@@ -68,7 +62,7 @@ Deno.test("a second run does not rewrite a file whose content has not changed", 
 });
 
 Deno.test("a document the baseline drops from the manifest has its output pruned", async () => {
-  const root = project({ docs: { ISMS01: SCOPE_BLOCK, ISMS02: SCOPE_BLOCK } });
+  const root = project({ docs: { ISMS01: ANCHORED_SCOPE_BLOCK, ISMS02: ANCHORED_SCOPE_BLOCK } });
   await runOk(root);
   Deno.statSync(join(root, "docs", "ISMS02-isms02.qmd"));
 
@@ -82,7 +76,7 @@ Deno.test("a document the baseline drops from the manifest has its output pruned
 });
 
 Deno.test("a document the institution un-adopts has its output pruned by the same path", async () => {
-  const root = project({ docs: { ISMS01: SCOPE_BLOCK, ISMS02: SCOPE_BLOCK } });
+  const root = project({ docs: { ISMS01: ANCHORED_SCOPE_BLOCK, ISMS02: ANCHORED_SCOPE_BLOCK } });
   await runOk(root);
   Deno.statSync(join(root, "docs", "ISMS02-isms02.qmd"));
 
@@ -100,7 +94,7 @@ Deno.test("an asset removed from the baseline is pruned from the composed tree",
   // The prune recurses, because assets bring subdirectories into the generated tree and a stray one
   // is as much a prune failure as a stray document.
   const root = project({
-    docs: { ISMS01: SCOPE_BLOCK },
+    docs: { ISMS01: ANCHORED_SCOPE_BLOCK },
     assets: { "_extensions/isms/docs/images/pic.png": new Uint8Array([1, 2, 3]) },
   });
   await runOk(root);
@@ -115,7 +109,7 @@ Deno.test("a composition error aborts the run, exits non-zero, and names what is
   // Composition is fail-loud by design: the pre-render hook must stop the render rather than
   // publish an ISMS that silently ignored a formally approved override.
   const root = project({
-    docs: { ISMS01: SCOPE_BLOCK },
+    docs: { ISMS01: ANCHORED_SCOPE_BLOCK },
     overrides: {
       ISMS01: "<!-- isms:override id=nonesuch mode=replace reason=x -->\nlocal\n<!-- isms:end id=nonesuch -->",
     },

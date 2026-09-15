@@ -1,8 +1,6 @@
 //
 // The block grammar: every rule the parser enforces, and every input it refuses.
 //
-// Grown in Task 3 of _dev/tests-and-ci-plan.md.
-//
 // Every refusal asserts the IDENTIFIER the message must name — the offending attribute, the ids
 // that do exist, the modes that do — never the sentence around it, so the wording stays free to
 // improve. blocks.ts touches no Deno API, so nothing here needs a fixture on disk: "mem://x.qmd"

@@ -17,24 +17,30 @@ quarto render                              # compose + build the site into _site
 quarto preview                             # live-reloading dev server
 quarto run _extensions/isms/cli/isms.ts    # run composition only, without rendering
 
-# Tests. See _tests/README.md for the tiers and the house rules for adding cases.
-quarto run _tests/typecheck.ts             # type-check the CLI; nothing else does
-quarto run _tests/run.ts                   # unit + fixture tiers, no render needed
-quarto render && quarto run _tests/run.ts --site   # ... plus the tiers that inspect real output
+# Tests. See _tests/README.md for the house rules for adding cases.
+quarto run _tests/run.ts                   # the suite; needs no render
+quarto run _tests/typecheck.ts             # type-check isms.ts, which no test imports
 ```
 
-CI runs all four on every pull request (`.github/workflows/isms.yml`). There is no linter and no
-build step beyond Quarto.
+No test depends on a render having happened: each builds its own throwaway ISMS project in a temp
+dir, or reads tracked source files. CI runs both commands plus a `quarto render` build check on
+every pull request (`.github/workflows/isms.yml`). There is no linter and no build step beyond
+Quarto.
 
 The CLI is Deno TypeScript run through `quarto run`, and the bare `stdlib/...` import specifiers
 are resolved by Quarto's own import map — so a plain `deno run` on these files fails unless it is
 given that map. `_tests/run.ts` locates it the way `quarto.js` does, from `$DENO_DIR`.
 
-**`quarto run` never type-checks.** It shells out to `deno run` with neither `--check` nor
-`--no-check`, so a type error in the CLI is invisible to `quarto render` and reaches the composed
-output as whatever the expression evaluates to. That is how two `TS2339` errors reading a deleted
+**`quarto render` never type-checks.** It shells out to `deno run` with neither `--check` nor
+`--no-check`, so a type error in the CLI is invisible to it and reaches the composed output as
+whatever the expression evaluates to. That is how two `TS2339` errors reading a deleted
 `UnadoptedDoc.line` once published `_isms.yml:undefined` as the audit citation for an un-adopted
-document. Run `quarto run _tests/typecheck.ts` after touching `_extensions/isms/cli/`.
+document.
+
+`deno test` *does* type-check, so running the suite covers every module under `lib/` — the tests
+import them. `isms.ts` is the exception: nothing imports it (it exits at the top level, so
+`cli_test.ts` drives it as a subprocess), which makes `_tests/typecheck.ts` the only thing that
+checks it. Run both after touching `_extensions/isms/cli/`.
 
 ### Sandboxed sessions (gondolin)
 

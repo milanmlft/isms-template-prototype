@@ -1,10 +1,8 @@
 //
 // Composition: the override contract, the front-matter merge rules, and the asset walk.
 //
-// Grown in Task 4 of _dev/tests-and-ci-plan.md.
-//
 import { join } from "stdlib/path";
-import { composeIn, project } from "./support/fixture.ts";
+import { ANCHORED_SCOPE_BLOCK, composeIn, project, SCOPE_BLOCK } from "./support/fixture.ts";
 import {
   assertContains,
   assertEquals,
@@ -13,15 +11,10 @@ import {
   assertRejectsWith,
 } from "./support/assert.ts";
 
-const SCOPE_BLOCK = "<!-- isms:begin id=scope -->\nbase\n<!-- isms:end id=scope -->";
-
 Deno.test("a three-file fixture composes one document", async () => {
   const root = project({
     docs: {
-      ISMS01: {
-        title: "First Policy",
-        body: "<!-- isms:begin id=scope -->\n## Scope {#sec-scope}\n\nbase\n<!-- isms:end id=scope -->",
-      },
+      ISMS01: { title: "First Policy", body: ANCHORED_SCOPE_BLOCK },
     },
   });
   const result = await composeIn(root);

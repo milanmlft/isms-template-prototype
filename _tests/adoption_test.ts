@@ -1,14 +1,12 @@
 //
 // `_isms.yml`: the adoption denylist, and every input it refuses.
 //
-// Grown in Task 5 of _dev/tests-and-ci-plan.md.
-//
 // Almost every fixture here ships TWO baseline documents. Un-adopting the only document in the
 // manifest trips the "nothing left to publish" guard, which would then be the error under test in
 // every case rather than the one the case is about.
 //
-import { composeIn, project } from "./support/fixture.ts";
-import { assertContains, assertEquals, assertRejectsWith } from "./support/assert.ts";
+import { composeIn, project, SCOPE_BLOCK } from "./support/fixture.ts";
+import { assertContains, assertEquals, assertMatch, assertRejectsWith } from "./support/assert.ts";
 
 /** A two-document baseline plus the `_isms.yml` under test. Bodies are inert: nothing parses them. */
 function adopting(adoption: string): string {
@@ -21,8 +19,10 @@ Deno.test("an _isms.yml that is not valid YAML is refused, naming the file", asy
     "_isms.yml",
     "YAML",
   );
-  // The parser's own complaint is passed through, so the author sees where the syntax broke.
-  assertEquals(err.message.length > "_isms.yml: not valid YAML: ".length, true);
+  // The parser's own complaint is passed through, so the author sees where the syntax broke. A
+  // length comparison cannot show that: the message is prefixed with the ABSOLUTE path, so it
+  // clears any yardstick built from the relative one even if the complaint were dropped entirely.
+  assertMatch(err.message, /not valid YAML: \S/);
 });
 
 Deno.test("an _isms.yml whose root is not a mapping is refused, naming what it found instead", async () => {
@@ -153,7 +153,7 @@ Deno.test("un-adopting every document is refused, because Quarto cannot render a
 
 Deno.test("no _isms.yml at all adopts everything", async () => {
   const result = await composeIn(
-    project({ docs: { ISMS01: "<!-- isms:begin id=scope -->\nbase\n<!-- isms:end id=scope -->" } }),
+    project({ docs: { ISMS01: SCOPE_BLOCK } }),
   );
   assertEquals(result.unadopted.length, 0);
   assertEquals(result.docs.length, 1);
