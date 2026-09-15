@@ -365,6 +365,32 @@ These are markdown comments and so are invisible in the rendered output.
 
 For maintainers of the baseline itself.
 
+### Verification
+
+```shell
+quarto run _tests/typecheck.ts                      # type-check the CLI
+quarto run _tests/run.ts                            # unit + fixture tests
+quarto render && quarto run _tests/run.ts --site    # ... plus checks on the real output
+```
+
+The suite needs no toolchain beyond the one requirement above: it runs on the Deno that ships
+inside Quarto, resolves imports through Quarto's own import map, and fetches nothing from the
+network. CI runs it on every pull request.
+
+Two kinds of test live there. Most build throwaway ISMS projects in temporary directories and drive
+the composition CLI against them, which is how the fail-loud paths — an override on a block that
+does not exist, an override shadowed by a replaced parent, a missing `reason` on an un-adoption —
+are exercised. The `--site` tiers instead compare this repo's own composed output and rendered site
+against the composer, which catches a document hand-edited under the `DO NOT EDIT BY HAND` banner,
+a tree that was never re-rendered, or output that outlived its manifest entry.
+
+Note that `quarto run` does **not** type-check — it is `deno run` underneath — so
+`_tests/typecheck.ts` is the only thing standing between a type error in the CLI and a composed
+document containing whatever the broken expression evaluated to.
+
+See `_tests/README.md` for the tiers, the house rules for adding cases, and an honest list of what
+the suite does not cover.
+
 ### Block grammar
 
 Blocks are named text ranges delimited by line-anchored HTML comments — chosen because they are
