@@ -203,7 +203,7 @@ export function collectDeviations(
  * exists to expose, so the CLI names each gap with a file:line the author can go and fix.
  */
 export function governanceWarnings(source: string, deviations: readonly Deviation[]): string[] {
-  return deviations.flatMap((d) => governanceGaps(source, `override "${d.blockId}"`, d));
+  return deviations.flatMap((d) => governanceGaps(`${source}:${d.line}`, `override "${d.blockId}"`, d));
 }
 
 export type GovernanceAttr = "reason" | "approved-by" | "approved-date";
