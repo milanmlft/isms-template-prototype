@@ -316,11 +316,22 @@ function danglingLinkWarnings(
 
       // A filename quoted in backticks is prose, not a reference.
       const prose = line.replace(/`[^`]*`/g, "");
-      const hrefs = [...prose.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]);
-      const ref = prose.match(/^ {0,3}\[[^\]]+\]:\s*(\S+)/);
+      // Both spellings of an inline destination — bare, and angle-bracketed — each with an
+      // optional title after it. A plain `[^)\s]+` misses `](./x.qmd "Title")` entirely, which
+      // is an ordinary link rather than an exotic one, and a missed link here is a governance
+      // warning that never fires.
+      const hrefs = [...prose.matchAll(/\]\(\s*(?:<([^>]*)>|([^\s)]+))[^)]*\)/g)]
+        .map((m) => m[1] ?? m[2]);
+      const ref = prose.match(/^ {0,3}\[[^\]]+\]:\s*<?([^>\s]+)>?/);
       if (ref) hrefs.push(ref[1]);
 
       for (const href of hrefs) {
+        // A scheme, or a protocol-relative `//`, means the target is not a path into this
+        // project however its last segment happens to be spelled. Without this, an institution
+        // linking to its own published copy at
+        // `https://it.example.ac.uk/isms/ISMS08-change-management-policy.html` is warned about
+        // a dangling reference on every render, and learns to ignore the whole warning class.
+        if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("//")) continue;
         // A markdown target is a URL: split on "/" rather than basename(), which would treat a
         // backslash as a separator on Windows.
         const file = href.split("#")[0].split("/").pop() ?? "";

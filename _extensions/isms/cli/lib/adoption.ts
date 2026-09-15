@@ -1,13 +1,10 @@
 // Which baseline documents this institution adopts.
 //
-// The baseline manifest is authoritative on which documents EXIST; `_isms.yml` at the project
-// root is the institution's account of which of them it publishes. A denylist, not an allowlist:
-// a document with no entry is adopted. That way a document added by a future baseline arrives
-// adopted on `quarto update`, rather than silently vanishing from an ISMS whose author never
-// knew it had been written.
-//
-// The file lives outside `_extensions/` because that directory is replaced wholesale on upgrade;
-// an adoption decision recorded there would not survive the first `quarto update`.
+// The baseline manifest is authoritative on which documents EXIST; `_isms.yml` at the project root
+// is the institution's account of which of them it publishes. Documents are opt-out: a document
+// with no entry is adopted. That way a document added by a future baseline arrives adopted on
+// `quarto update`, rather than silently vanishing from an ISMS whose author never knew it had been
+// written.
 
 import { parse as parseYaml } from "stdlib/yaml";
 import { join, relative } from "stdlib/path";
@@ -22,7 +19,7 @@ const TOP_KEYS = ["documents"];
 const DOC_KEYS = ["adopted", "approved-by", "approved-date", "reason"];
 
 /**
- * One baseline document the institution has declined to adopt.
+ * A baseline document the institution has declined to adopt.
  *
  * `reason` is mandatory, unlike a block override's. A block override leaves its text in the
  * composed document, wrapped in a provenance marker; an un-adopted document leaves nothing
@@ -30,7 +27,6 @@ const DOC_KEYS = ["adopted", "approved-by", "approved-date", "reason"];
  */
 export interface UnadoptedDoc {
   ismsId: string;
-  /** The manifest title. There is no composed front matter that could have retitled it. */
   title: string;
   reason: string;
   approvedBy?: string;
@@ -258,6 +254,13 @@ function keyLine(src: string, path: readonly string[]): number {
   let parentIndent = -1;
 
   for (const step of path) {
+    // Every key at one level shares one indent, and the first candidate below the parent fixes
+    // it. Anything deeper is a nested mapping or the continuation of a block scalar — and
+    // `reason:` is authored as a folded scalar in the shipped template, so a wrapped line that
+    // happens to read "ISMS08: change management…" is the realistic case this guards against.
+    // Without it that line is taken for the ISMS08 key, and the register cites another
+    // document's prose as the provenance of an un-adoption.
+    let childIndent = -1;
     let hit = -1;
     for (let i = from; i < lines.length; i++) {
       const line = lines[i];
@@ -266,6 +269,8 @@ function keyLine(src: string, path: readonly string[]): number {
       const indent = line.length - trimmed.length;
       // Dedenting to the parent's level or beyond means this key's subtree has ended.
       if (indent <= parentIndent) break;
+      if (childIndent === -1) childIndent = indent;
+      if (indent !== childIndent) continue;
       const m = trimmed.match(/^(['"]?)(.+?)\1\s*:(?:\s|$)/);
       if (m && m[2] === step) {
         hit = i;
