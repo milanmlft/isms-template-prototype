@@ -8,7 +8,6 @@
 
 import { parse as parseYaml } from "stdlib/yaml";
 import { join, relative } from "stdlib/path";
-import { ParseError } from "./blocks.ts";
 import type { Baseline } from "./project.ts";
 import { governanceGaps } from "./deviations.ts";
 
@@ -31,10 +30,7 @@ export interface UnadoptedDoc {
   reason: string;
   approvedBy?: string;
   approvedDate?: string;
-  /** `_isms.yml`, relative: the register cites it, and a rendered page must not leak a build path. */
   source: string;
-  /** 1-based line of this document's key in `_isms.yml` — the audit citation. */
-  line: number;
   /** Project-relative path of the baseline source, cited (never linked) in the register. */
   baselineSource: string;
 }
@@ -65,32 +61,24 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
   try {
     parsed = parseYaml(src || "{}") ?? {};
   } catch (err) {
-    throw new ParseError(path, 1, `not valid YAML: ${(err as Error).message}`);
+    throw new Error(`${path}: not valid YAML: ${(err as Error).message}`);
   }
   if (!isMapping(parsed)) {
-    throw new ParseError(
-      path,
-      1,
-      `the file must be a mapping of keys to values, not ${describe(parsed)}`,
-    );
+    throw new Error(`${path}: the file must be a mapping of keys to values, not ${describe(parsed)}`);
   }
 
   for (const key of Object.keys(parsed)) {
     if (TOP_KEYS.includes(key)) continue;
-    throw new ParseError(
-      path,
-      keyLine(src, [key]),
-      `unknown key "${key}". Allowed here: ${TOP_KEYS.join(", ")}`,
+    throw new Error(
+      `${path}: unknown key "${key}". Allowed here: ${TOP_KEYS.join(", ")}`,
     );
   }
 
   const raw = parsed.documents;
   if (raw === undefined || raw === null) return empty;
   if (!isMapping(raw)) {
-    throw new ParseError(
-      path,
-      keyLine(src, ["documents"]),
-      `\`documents:\` must be a mapping of ISMS IDs to their adoption status, not ` +
+    throw new Error(
+      `${path}: \`documents:\` must be a mapping of ISMS IDs to their adoption status, not ` +
       `${describe(raw)}. Write \`ISMS08:\` with \`adopted: false\` beneath it, not \`- ISMS08\`.`,
     );
   }
@@ -101,67 +89,52 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
   // Iterate the FILE's keys, not the manifest's: an ID that is in neither is the typo this loop
   // exists to catch, and it can only be seen from this side.
   for (const [id, entry] of Object.entries(raw)) {
-    const at = (...tail: string[]) => keyLine(src, ["documents", id, ...tail]);
 
     if (!specs.has(id)) {
       // A typo here would silently ADOPT a document the institution believes it dropped. The same
       // reasoning as an override targeting a block ID that does not exist.
-      throw new ParseError(
-        path,
-        at(),
-        `no document "${id}" in baseline ${manifest.baseline_version}. It may have been renamed ` +
+      throw new Error(
+        `${path}: no document "${id}" in baseline ${manifest.baseline_version}. It may have been renamed ` +
         `or removed by a baseline update, in which case delete this entry. ` +
         `Baseline documents: ${[...specs.keys()].join(", ")}`,
       );
     }
     if (!isMapping(entry)) {
-      throw new ParseError(
-        path,
-        at(),
-        `\`documents.${id}\` must be a mapping, not ${describe(entry)}. ` +
+      throw new Error(
+        `${path}: \`documents.${id}\` must be a mapping, not ${describe(entry)}. ` +
         `Write \`adopted: false\` beneath it, with a \`reason:\`.`,
       );
     }
     for (const key of Object.keys(entry)) {
       if (DOC_KEYS.includes(key)) continue;
-      throw new ParseError(
-        path,
-        at(key),
-        `unknown key "${key}" under \`documents.${id}\`. Allowed here: ${DOC_KEYS.join(", ")}`,
+      throw new Error(
+        `${path}: unknown key "${key}" under \`documents.${id}\`. Allowed here: ${DOC_KEYS.join(", ")}`,
       );
     }
 
     const adopted = entry.adopted;
     if (adopted === undefined) {
-      throw new ParseError(
-        path,
-        at(),
-        `\`documents.${id}\` has no \`adopted:\` key. Write \`adopted: false\` to un-adopt this ` +
+      throw new Error(
+        `${path}: \`documents.${id}\` has no \`adopted:\` key. Write \`adopted: false\` to un-adopt this ` +
         `document; a document with no entry in ${rel} is adopted.`,
       );
     }
     if (typeof adopted !== "boolean") {
-      // YAML 1.2 resolves only true/false, so `adopted: no` is the STRING "no" — truthy, and not
-      // equal to false. Without this check the document would be silently adopted.
       const hint = typeof adopted === "string" && /^(yes|no|on|off)$/i.test(adopted)
         ? ` (YAML reads \`${adopted}\` here as the text "${adopted}", not as a boolean.)`
         : "";
-      throw new ParseError(
-        path,
-        at("adopted"),
-        `\`documents.${id}.adopted\` must be \`true\` or \`false\`, not ${describe(adopted)}.${hint}`,
+      throw new Error(
+        `${path}: \`documents.${id}.adopted\` must be \`true\` or \`false\`, not ${describe(adopted)}.${hint}`,
       );
     }
     // Recording a reviewed decision to adopt is legitimate, and lets an institution turn a
     // document back on by changing one word rather than deleting a governed entry.
     if (adopted) continue;
 
-    const reason = attrText(path, src, ["documents", id, "reason"], entry.reason);
+    const reason = attrText(path, ["documents", id, "reason"], entry.reason);
     if (reason === undefined || reason.trim() === "") {
-      throw new ParseError(
-        path,
-        at(),
-        `\`documents.${id}\` un-adopts ${id} but gives no \`reason:\`. An un-adopted document ` +
+      throw new Error(
+        `${path}: \`documents.${id}\` un-adopts ${id} but gives no \`reason:\`. An un-adopted document ` +
         `leaves no trace in the composed site, so the deviations register is the only record ` +
         `of the decision.`,
       );
@@ -169,10 +142,9 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
 
     declined.set(id, {
       reason,
-      approvedBy: attrText(path, src, ["documents", id, "approved-by"], entry["approved-by"]),
-      approvedDate: attrText(path, src, ["documents", id, "approved-date"], entry["approved-date"]),
+      approvedBy: attrText(path, ["documents", id, "approved-by"], entry["approved-by"]),
+      approvedDate: attrText(path, ["documents", id, "approved-date"], entry["approved-date"]),
       source: rel,
-      line: at(),
     });
   }
 
@@ -180,10 +152,8 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
     // Not a policy judgement: Quarto crashes in sidebarItemsFromAuto when the sidebar's
     // `auto: "docs/*.qmd"` glob matches nothing, so a site with no controlled documents cannot
     // be rendered at all. Better to say so here than to hand over a Quarto stack trace.
-    throw new ParseError(
-      path,
-      keyLine(src, ["documents"]),
-      `every document in baseline ${manifest.baseline_version} is un-adopted ` +
+    throw new Error(
+      `${path}: every document in baseline ${manifest.baseline_version} is un-adopted ` +
       `(${[...specs.keys()].join(", ")}), leaving no controlled documents to publish. Quarto ` +
       `cannot build a site whose sidebar glob matches nothing, so an ISMS must adopt at least one.`,
     );
@@ -224,65 +194,15 @@ export function loadAdoption(root: string, baseline: Baseline): Adoption {
  */
 function attrText(
   path: string,
-  src: string,
   keyPath: readonly string[],
   value: unknown,
 ): string | undefined {
   if (value === undefined || value === null) return undefined;
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   if (typeof value === "string") return value;
-  throw new ParseError(
-    path,
-    keyLine(src, keyPath),
-    `\`${keyPath.join(".")}\` must be text, not ${describe(value)}.`,
+  throw new Error(
+    `${path}: \`${keyPath.join(".")}\` must be text, not ${describe(value)}.`,
   );
-}
-
-/**
- * 1-based line of a nested key path in `_isms.yml`, so an error points at the offending key.
- *
- * Falls back to the deepest step it could resolve, which is what a MISSING key wants: the path
- * `["documents", "ISMS08", "reason"]` on an entry with no `reason:` points at the `ISMS08:` line.
- * Indentation-aware, but not a YAML parser — flow style falls back the same way, as `metaLine()`
- * in compose.ts does for front matter. If a third caller ever appears, promote both into a
- * `lib/yaml-lines.ts` rather than growing a third copy.
- */
-function keyLine(src: string, path: readonly string[]): number {
-  const lines = src.split("\n");
-  let found = 1;
-  let from = 0;
-  let parentIndent = -1;
-
-  for (const step of path) {
-    // Every key at one level shares one indent, and the first candidate below the parent fixes
-    // it. Anything deeper is a nested mapping or the continuation of a block scalar — and
-    // `reason:` is authored as a folded scalar in the shipped template, so a wrapped line that
-    // happens to read "ISMS08: change management…" is the realistic case this guards against.
-    // Without it that line is taken for the ISMS08 key, and the register cites another
-    // document's prose as the provenance of an un-adoption.
-    let childIndent = -1;
-    let hit = -1;
-    for (let i = from; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmed = line.trimStart();
-      if (trimmed === "" || trimmed.startsWith("#")) continue;
-      const indent = line.length - trimmed.length;
-      // Dedenting to the parent's level or beyond means this key's subtree has ended.
-      if (indent <= parentIndent) break;
-      if (childIndent === -1) childIndent = indent;
-      if (indent !== childIndent) continue;
-      const m = trimmed.match(/^(['"]?)(.+?)\1\s*:(?:\s|$)/);
-      if (m && m[2] === step) {
-        hit = i;
-        break;
-      }
-    }
-    if (hit === -1) return found;
-    found = hit + 1;
-    from = hit + 1;
-    parentIndent = lines[hit].length - lines[hit].trimStart().length;
-  }
-  return found;
 }
 
 function isMapping(v: unknown): v is Record<string, unknown> {

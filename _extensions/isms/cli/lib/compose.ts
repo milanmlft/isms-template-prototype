@@ -20,7 +20,7 @@ import {
   governanceWarnings,
   renderRegister,
 } from "./deviations.ts";
-import { ISMS_CONFIG_PATH, loadAdoption, type UnadoptedDoc } from "./adoption.ts";
+import { loadAdoption, type UnadoptedDoc } from "./adoption.ts";
 
 export const COMPOSED_DIR = "docs";
 /**
@@ -240,7 +240,7 @@ function assertNoOverrideFor(root: string, spec: DocumentSpec, unadopted: Unadop
     throw err;
   }
   throw new Error(
-    `${rel} overrides ${spec.id}, which ${unadopted.source}:${unadopted.line} un-adopts, so ` +
+    `${rel} overrides ${spec.id}, which ${unadopted.source} un-adopts, so ` +
     `nothing in it could ever reach the composed output. Delete it, move it outside ` +
     `${OVERRIDES_DIR}/, or re-adopt the document. Do not merely rename it: any non-.qmd file ` +
     `under ${OVERRIDES_DIR}/ is mirrored into ${COMPOSED_DIR}/ as an asset.`,
@@ -341,12 +341,12 @@ function danglingLinkWarnings(
         const block = open[open.length - 1];
         const fix = block === undefined
           ? `The link is in baseline text outside any overridable block, so it cannot be ` +
-            `changed locally — report it to the baseline maintainers.`
+          `changed locally — report it to the baseline maintainers.`
           : `Override block "${block}" in ${join(OVERRIDES_DIR, `${doc.ismsId}.qmd`)} to remove ` +
-            `or redirect the link.`;
+          `or redirect the link.`;
         warnings.push(
           `${doc.path}:${i + 1}: links to ${hit.ismsId} ("${href}"), which ` +
-          `${hit.source}:${hit.line} un-adopts. ${fix}`,
+          `${hit.source} un-adopts. ${fix}`,
         );
       }
     }
