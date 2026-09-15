@@ -447,6 +447,7 @@ export function renderRegister(input: RegisterInput): string {
         `### ${u.ismsId} · ${flatten(u.title)} {#${unadoptedAnchor(u.ismsId)}}`,
         ``,
         `Not adopted · approved by ${cell(u.approvedBy)} on ${cell(u.approvedDate)}.`,
+        ``,
         `**Reason:** ${cell(u.reason)}`,
         ``
       );
