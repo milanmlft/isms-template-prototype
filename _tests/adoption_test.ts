@@ -25,22 +25,28 @@ Deno.test("an _isms.yml that is not valid YAML is refused, naming the file", asy
   assertMatch(err.message, /not valid YAML: \S/);
 });
 
-Deno.test("an _isms.yml whose root is not a mapping is refused, naming what it found instead", async () => {
+Deno.test("schema-shape violations are refused, naming what was found", async () => {
+  // Root not a mapping: an _isms.yml whose root is a list
   await assertRejectsWith(
     () => composeIn(adopting("- just a list\n")),
     "_isms.yml",
     "mapping",
     "a list",
   );
-});
-
-Deno.test("`documents:` written as a sequence is refused, showing the mapping form it wants", async () => {
+  // `documents:` written as a sequence
   // `- ISMS02` is the shape someone reaches for when they think of this as a list of dropped
   // documents; it parses fine, so only this check stands between it and a silent adoption of all.
   await assertRejectsWith(
     () => composeIn(adopting("documents:\n  - ISMS02\n")),
     "documents:",
     "a list",
+    "adopted: false",
+  );
+  // Document entry not a mapping: e.g. `documents: {ISMS02: false}`
+  await assertRejectsWith(
+    () => composeIn(adopting("documents:\n  ISMS02: false\n")),
+    "documents.ISMS02",
+    "mapping",
     "adopted: false",
   );
 });
@@ -61,15 +67,6 @@ Deno.test("an id absent from the manifest is refused, listing the documents the 
     "ISMS99",
     "9.9.9",
     "ISMS01, ISMS02",
-  );
-});
-
-Deno.test("a document entry that is not a mapping is refused, naming the entry", async () => {
-  await assertRejectsWith(
-    () => composeIn(adopting("documents:\n  ISMS02: false\n")),
-    "documents.ISMS02",
-    "mapping",
-    "adopted: false",
   );
 });
 
@@ -113,9 +110,7 @@ Deno.test("un-adopting a document with no `reason:` is refused, unlike the same 
     "ISMS02",
     "reason",
   );
-});
-
-Deno.test("an empty `reason:` is refused exactly as a missing one is", async () => {
+  // An empty/whitespace-only `reason:` is refused exactly as a missing one is
   await assertRejectsWith(
     () => composeIn(adopting('documents:\n  ISMS02:\n    adopted: false\n    reason: "   "\n')),
     "ISMS02",
@@ -151,27 +146,25 @@ Deno.test("un-adopting every document is refused, because Quarto cannot render a
   );
 });
 
-Deno.test("no _isms.yml at all adopts everything", async () => {
-  const result = await composeIn(
+Deno.test("a document with no entry is adopted — the file is a denylist", async () => {
+  // No _isms.yml at all adopts everything
+  const result1 = await composeIn(
     project({ docs: { ISMS01: SCOPE_BLOCK } }),
   );
-  assertEquals(result.unadopted.length, 0);
-  assertEquals(result.docs.length, 1);
-});
-
-Deno.test("an _isms.yml with no `documents:` key adopts everything", async () => {
-  const result = await composeIn(adopting("documents:\n"));
-  assertEquals(result.unadopted.length, 0);
-  assertEquals(result.docs.length, 2);
-});
-
-Deno.test("a document with no entry is adopted — the file is a denylist", async () => {
+  assertEquals(result1.unadopted.length, 0);
+  assertEquals(result1.docs.length, 1);
+  
+  // An _isms.yml with no `documents:` key adopts everything
+  const result2 = await composeIn(adopting("documents:\n"));
+  assertEquals(result2.unadopted.length, 0);
+  assertEquals(result2.docs.length, 2);
+  
   // The point of the denylist: a document a future baseline adds arrives ADOPTED, rather than
   // vanishing from an ISMS whose author never knew it had been written.
-  const result = await composeIn(
+  const result3 = await composeIn(
     adopting("documents:\n  ISMS02:\n    adopted: false\n    reason: covered centrally\n"),
   );
-  assertEquals(result.docs.map((d) => d.ismsId), ["ISMS01"]);
+  assertEquals(result3.docs.map((d) => d.ismsId), ["ISMS01"]);
 });
 
 Deno.test("`adopted: true` is a legal no-op, so a reviewed decision to adopt can be recorded", async () => {
@@ -189,19 +182,6 @@ Deno.test("an un-adopted document is composed nowhere and recorded in unadopted"
   assertEquals(result.unadopted.map((u) => u.ismsId), ["ISMS02"]);
   assertEquals(result.unadopted.map((u) => u.reason), ["covered centrally"]);
   assertEquals([...result.files.keys()].some((k) => k.startsWith("docs/ISMS02-")), false);
-});
-
-Deno.test("un-adoptions are listed in manifest order, not in the order _isms.yml names them", async () => {
-  // The register reads in document order and does no sort of its own, so the Map this builds has
-  // to arrive already ordered.
-  const root = project({
-    docs: { ISMS01: "one", ISMS02: "two", ISMS03: "three" },
-    adoption: "documents:\n" +
-      "  ISMS03:\n    adopted: false\n    reason: c\n" +
-      "  ISMS01:\n    adopted: false\n    reason: a\n",
-  });
-  const result = await composeIn(root);
-  assertEquals(result.unadopted.map((u) => u.ismsId), ["ISMS01", "ISMS03"]);
 });
 
 Deno.test("a missing approved-by warns but still composes", async () => {

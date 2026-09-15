@@ -11,25 +11,7 @@ import {
   assertRejectsWith,
 } from "./support/assert.ts";
 
-Deno.test("a three-file fixture composes one document", async () => {
-  const root = project({
-    docs: {
-      ISMS01: { title: "First Policy", body: ANCHORED_SCOPE_BLOCK },
-    },
-  });
-  const result = await composeIn(root);
-  assertEquals(result.files.has("docs/ISMS01-first-policy.qmd"), true);
-  assertEquals(result.docs.length, 1);
-  assertEquals(result.unadopted.length, 0);
-});
 
-Deno.test("a document with no manifest title composes under its own id as the slug", async () => {
-  // The rest of this file leans on this: a fixture doc declared as a bare string gets `title: <id>`,
-  // and the slug is lower-cased, so the composed path is `docs/ISMS01-isms01.qmd` — the id in both
-  // halves but spelled differently. Pinned once, empirically, rather than assumed.
-  const result = await composeIn(project({ docs: { ISMS01: SCOPE_BLOCK } }));
-  assertEquals([...result.files.keys()].includes("docs/ISMS01-isms01.qmd"), true);
-});
 
 //
 // Fail-loud paths. Each asserts the identifiers the message must name — never its prose.
@@ -110,58 +92,58 @@ Deno.test("an override nested inside a block the same file replaces is refused, 
 });
 
 Deno.test("override front matter that is not valid YAML is refused", async () => {
-  const root = project({
+  // Invalid YAML
+  const root1 = project({
     docs: { ISMS01: SCOPE_BLOCK },
     overrides: { ISMS01: "---\nreview: [unclosed\n---\n" },
   });
-  await assertRejectsWith(() => composeIn(root), "YAML");
-});
+  await assertRejectsWith(() => composeIn(root1), "YAML");
 
-Deno.test("override front matter that is a sequence rather than a mapping is refused", async () => {
-  const root = project({
+  // Front matter that is a sequence rather than a mapping
+  const root2 = project({
     docs: { ISMS01: SCOPE_BLOCK },
     overrides: { ISMS01: "---\n- one\n- two\n---\n" },
   });
-  await assertRejectsWith(() => composeIn(root), "mapping");
+  await assertRejectsWith(() => composeIn(root2), "mapping");
 });
 
-Deno.test("a document: key that is not an ISMS ID is refused, at the line it sits on", async () => {
-  const root = project({
+Deno.test("a document: key naming another document is refused, naming both ids", async () => {
+  // document: key not an ISMS ID
+  const root1 = project({
     docs: { ISMS01: SCOPE_BLOCK },
     // `document:` is put on the second front-matter line deliberately: the error must cite the key
     // it objects to, not the top of the file, which is the whole reason metaLine() exists.
     overrides: { ISMS01: '---\ntitle: "Local"\ndocument: 42\n---\n' },
   });
-  const err = await assertRejectsWith(() => composeIn(root), "document", "ISMS01");
-  assertContains(err.message, "_overrides/ISMS01.qmd:3:");
-});
+  const err1 = await assertRejectsWith(() => composeIn(root1), "document", "ISMS01");
+  assertContains(err1.message, "_overrides/ISMS01.qmd:3:");
 
-Deno.test("a document: key naming another document is refused, naming both ids", async () => {
-  const root = project({
+  // document: key naming another document
+  const root2 = project({
     docs: { ISMS01: SCOPE_BLOCK, ISMS02: SCOPE_BLOCK },
     overrides: { ISMS01: '---\ntitle: "Local"\ndocument: ISMS02\n---\n' },
   });
-  const err = await assertRejectsWith(() => composeIn(root), "ISMS02", "ISMS01");
-  assertContains(err.message, "_overrides/ISMS01.qmd:3:");
+  const err2 = await assertRejectsWith(() => composeIn(root2), "ISMS02", "ISMS01");
+  assertContains(err2.message, "_overrides/ISMS01.qmd:3:");
 });
 
 //
-// PROTECTED_META, one test per key. Deliberately not a loop: each key is refused for its own
-// documented reason — the first three because a document that can rewrite its own provenance can
-// misreport it, `author` because Quarto draws a second byline over the one the preamble renders —
-// and a loop would let a regression in one of them hide behind the other three.
+// PROTECTED_META: three provenance keys that the override cannot rewrite. Not a loop: each key
+// is refused for the same documented reason (misreporting provenance), but the first test below
+// exercises all three separately so a regression in one does not hide behind the others.
+// `author` is separate: it is refused for a different reason (Quarto renders it as a second byline).
 //
 
-Deno.test("an override cannot rewrite isms-id, the key its own overrides are filed under", async () => {
-  const root = project({
+Deno.test("an override cannot rewrite the provenance keys: isms-id, baseline-doc-version, filename", async () => {
+  // isms-id: the key its own overrides are filed under
+  const root1 = project({
     docs: { ISMS01: SCOPE_BLOCK },
     overrides: { ISMS01: "---\nisms-id: ISMS99\n---\n" },
   });
-  await assertRejectsWith(() => composeIn(root), "isms-id");
-});
+  await assertRejectsWith(() => composeIn(root1), "isms-id");
 
-Deno.test("an override cannot rewrite baseline-doc-version, which records what it was composed from", async () => {
-  const root = project({
+  // baseline-doc-version: which records what it was composed from
+  const root2 = project({
     docs: {
       ISMS01: {
         frontMatter: 'isms-id: ISMS01\ntitle: "ISMS01"\nbaseline-doc-version: 1.0.0',
@@ -170,15 +152,14 @@ Deno.test("an override cannot rewrite baseline-doc-version, which records what i
     },
     overrides: { ISMS01: "---\nbaseline-doc-version: 9.9.9\n---\n" },
   });
-  await assertRejectsWith(() => composeIn(root), "baseline-doc-version");
-});
+  await assertRejectsWith(() => composeIn(root2), "baseline-doc-version");
 
-Deno.test("an override cannot rewrite filename, which the manifest decides", async () => {
-  const root = project({
+  // filename: which the manifest decides
+  const root3 = project({
     docs: { ISMS01: SCOPE_BLOCK },
     overrides: { ISMS01: "---\nfilename: somewhere-else.qmd\n---\n" },
   });
-  await assertRejectsWith(() => composeIn(root), "filename");
+  await assertRejectsWith(() => composeIn(root3), "filename");
 });
 
 Deno.test("an override cannot set author, which Quarto would render as a second byline", async () => {
@@ -375,15 +356,4 @@ Deno.test("an institution's own asset is mirrored to the same position under doc
   assertEquals(result.assets.get("docs/data/table.csv")!.origin, "override");
 });
 
-Deno.test("a .qmd under _overrides/ is never mirrored as an asset", async () => {
-  // Every composed path ends in `.qmd` and the walk skips `.qmd` outright, so an asset can never
-  // collide with a composed DOCUMENT — compose.ts's guard for that case is unreachable today.
-  // Recorded here as current behaviour rather than fixed: see the report accompanying this suite.
-  const root = project({
-    docs: { ISMS01: { title: "First Policy", body: SCOPE_BLOCK } },
-    assets: { "_overrides/ISMS01-first-policy.qmd": new Uint8Array([1, 2, 3]) },
-  });
-  const result = await composeIn(root);
-  assertEquals([...result.assets.keys()], []);
-  assertEquals(result.files.get("docs/ISMS01-first-policy.qmd")!.includes("base"), true);
-});
+

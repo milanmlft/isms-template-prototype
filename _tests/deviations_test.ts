@@ -47,9 +47,7 @@ function accessDoc(childBody: string) {
   };
 }
 
-Deno.test("the register is generated even with no deviations at all", async () => {
-  assertContains(await registerFor({ docs: { ISMS01: SCOPE_BLOCK } }), "Coverage");
-});
+
 
 // --- Anchor precedence: the three-way rule -----------------------------------------------------
 //
@@ -287,10 +285,14 @@ Deno.test("a manifest document that is neither composed nor un-adopted is refuse
   );
 });
 
-Deno.test("the empty state still renders every section", () => {
-  const out = register({});
+Deno.test("the empty state still renders every section", async () => {
+  // A no-deviation project still gets a generated register page.
+  const noDevs = await registerFor({ docs: { ISMS01: SCOPE_BLOCK } });
+  assertContains(noDevs, "Coverage");
+  
   // `renderRegister` has exactly one return: the old `total === 0` early return sat mid-page and
   // silently dropped every section below it.
+  const out = register({});
   assertContains(out, "{#coverage}");
   assertContains(out, "{#register}");
 });

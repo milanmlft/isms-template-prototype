@@ -17,43 +17,21 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     env:
-      # Makes `quarto run` pass deno `--cached-only`. Every `stdlib/*` specifier the CLI imports is
-      # already in the cache Quarto ships, so this costs nothing and turns a stray remote import
-      # into a loud failure rather than a silently acquired dependency. It covers the composition
-      # pre-render hook as well as the explicit `quarto run` steps below.
       QUARTO_RUN_NO_NETWORK: "true"
     steps:
       - uses: actions/checkout@v7
 
-      # No TinyTeX and no Chromium: the project renders `isms-html` only, with no executable cells,
-      # no mermaid and no graphviz. Nothing is worth caching either — Quarto seeds its Deno cache by
-      # copying from its own install, so an actions/cache entry would only be overwritten.
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
           version: "1.8.25" # _extension.yml declares quarto-required: ">=1.8.0"
 
-      # No render needed: every test builds its own throwaway project in a temp dir, or reads
-      # tracked source files. `deno test` type-checks, so this also covers every module under
-      # `cli/lib/` — the tests import them.
       - name: Test
         run: quarto run _tests/run.ts
 
-      # The one module the suite cannot see: nothing imports `isms.ts`, and `quarto render` runs it
-      # through `deno run`, which never type-checks. So a type error there is invisible to both.
       - name: Type-check isms.ts
         run: quarto run _tests/typecheck.ts
 
-      # Not a test — a build check. Nothing asserts anything about what this produces; it is here
-      # because the composition CLI runs as a pre-render hook, so a render is the only thing that
-      # exercises Quarto actually invoking it, and the site is worth having as an artefact.
+        # Check if full site renders
       - name: Render
         run: quarto render
-
-      - name: Upload the rendered site
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: site
-          path: _site/
-          retention-days: 7

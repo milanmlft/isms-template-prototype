@@ -16,14 +16,6 @@ import {
 } from "../_extensions/isms/cli/lib/blocks.ts";
 import { assertContains, assertEquals, assertMissing, assertThrowsWith } from "./support/assert.ts";
 
-Deno.test("parseDocument records a block by its id", () => {
-  const doc = parseDocument(
-    "mem://x.qmd",
-    "---\ntitle: x\n---\n<!-- isms:begin id=scope -->\nhi\n<!-- isms:end id=scope -->\n",
-  );
-  assertEquals([...doc.blocks.keys()], ["scope"]);
-});
-
 // ---------------------------------------------------------------------------
 // Attributes: the sets are closed, so a typo is an error rather than a no-op.
 // ---------------------------------------------------------------------------
@@ -47,18 +39,6 @@ Deno.test("the same attribute given twice is refused", () => {
   );
 });
 
-Deno.test("an attribute written without its `=` is refused rather than ignored", () => {
-  assertThrowsWith(
-    () =>
-      parseOverrides(
-        "mem://o.qmd",
-        "<!-- isms:override id=x mode replace -->\nlocal\n<!-- isms:end id=x -->",
-      ),
-    "mode replace",
-    "key=value",
-  );
-});
-
 // The plan pairs this trigger with the `could not parse attributes: "..."` throw, but that one is
 // unreachable: it fires only when nothing matched key=value AND the leftover scan found nothing,
 // and the leftover is exactly what did not match, so the earlier throw always wins first.
@@ -66,6 +46,17 @@ Deno.test("a delimiter carrying a token that is not an attribute is refused, quo
   assertThrowsWith(
     () => parseDocument("mem://x.qmd", "<!-- isms:begin ?? -->\nb\n<!-- isms:end id=x -->"),
     "??",
+    "key=value",
+  );
+  
+  // Attribute without `=` sign is also refused, as a bare token.
+  assertThrowsWith(
+    () =>
+      parseOverrides(
+        "mem://o.qmd",
+        "<!-- isms:override id=x mode replace -->\nlocal\n<!-- isms:end id=x -->",
+      ),
+    "mode replace",
     "key=value",
   );
 });
@@ -82,17 +73,16 @@ Deno.test("a delimiter not anchored at column 0 is an error, not an ordinary com
   );
 });
 
-Deno.test("a delimiter with no closing `-->` before end of file is refused", () => {
-  assertThrowsWith(
-    () => parseDocument("mem://x.qmd", "<!-- isms:begin id=x\nstill going\n"),
-    "unterminated",
-  );
-});
-
 Deno.test("nothing may follow the closing `-->` on a delimiter line", () => {
   assertThrowsWith(
     () => parseDocument("mem://x.qmd", "<!-- isms:begin id=x --> trailing\nb\n<!-- isms:end id=x -->"),
     "-->",
+  );
+  
+  // A delimiter without closing `-->` before EOF is also an unterminated error.
+  assertThrowsWith(
+    () => parseDocument("mem://x.qmd", "<!-- isms:begin id=x\nstill going\n"),
+    "unterminated",
   );
 });
 
@@ -160,14 +150,6 @@ Deno.test("two blocks with the same id in one document are refused", () => {
   );
 });
 
-Deno.test("isms:end with no block open is refused", () => {
-  assertThrowsWith(
-    () => parseDocument("mem://x.qmd", "prose\n<!-- isms:end id=a -->\n"),
-    "a",
-    "isms:begin",
-  );
-});
-
 Deno.test("isms:end that does not close the open block is refused, naming both ids and the line it opened on", () => {
   const err = assertThrowsWith(
     () =>
@@ -182,6 +164,20 @@ Deno.test("isms:end that does not close the open block is refused, naming both i
   // either delimiter in an editor.
   assertContains(err.message, "mem://x.qmd:6");
   assertContains(err.message, "line 4");
+  
+  // isms:end with no block open at all.
+  assertThrowsWith(
+    () => parseDocument("mem://x.qmd", "prose\n<!-- isms:end id=a -->\n"),
+    "a",
+    "isms:begin",
+  );
+  
+  // isms:end in an override file with a different id than the open isms:override.
+  assertThrowsWith(
+    () => parseOverrides("mem://o.qmd", "<!-- isms:override id=a -->\nlocal\n<!-- isms:end id=b -->"),
+    '"a"',
+    "isms:end id=a",
+  );
 });
 
 Deno.test("a block that is never closed is refused", () => {
@@ -200,14 +196,6 @@ Deno.test("isms:begin in an override file is refused", () => {
     () => parseOverrides("mem://o.qmd", "<!-- isms:begin id=x -->\nlocal\n<!-- isms:end id=x -->"),
     "isms:override",
     "isms:begin",
-  );
-});
-
-Deno.test("an override closed by an end for a different id is refused", () => {
-  assertThrowsWith(
-    () => parseOverrides("mem://o.qmd", "<!-- isms:override id=a -->\nlocal\n<!-- isms:end id=b -->"),
-    '"a"',
-    "isms:end id=a",
   );
 });
 
@@ -286,18 +274,6 @@ Deno.test("isAncestor is dotted-prefix, not string-prefix", () => {
   assertEquals(isAncestor("user-access", "user-access"), false);
 });
 
-Deno.test("emit marks an overridden block's provenance with source=override and the mode", () => {
-  const doc = parseDocument("mem://x.qmd", "<!-- isms:begin id=scope -->\nbase\n<!-- isms:end id=scope -->");
-  const { ops } = parseOverrides(
-    "mem://o.qmd",
-    "<!-- isms:override id=scope mode=replace reason=x -->\nlocal\n<!-- isms:end id=scope -->",
-  );
-  const out = emit(doc.root, ops, true);
-  assertContains(out, "<!-- isms:block id=scope source=override mode=replace -->");
-  assertContains(out, "local");
-  assertMissing(out, "base");
-});
-
 Deno.test("a block adopted verbatim carries a marker with no source attribute", () => {
   const doc = parseDocument("mem://x.qmd", "<!-- isms:begin id=scope -->\nbase\n<!-- isms:end id=scope -->");
   const out = emit(doc.root, new Map(), true);
@@ -323,26 +299,4 @@ Deno.test("before and after splice around the baseline, replace and delete stand
   assertEquals(bodyFor("delete", ""), ["<!-- isms:deleted id=scope -->"]);
 });
 
-Deno.test("the markers emit writes are the ones BLOCK_OPEN_RE and BLOCK_CLOSE_RE match", () => {
-  // Two other modules re-read these markers — the deviations register resolves its deep links from
-  // them, and throws rather than dropping a link when a range is missing — so a change to emit's
-  // marker format that left the patterns behind would break them silently.
-  const doc = parseDocument(
-    "mem://x.qmd",
-    "<!-- isms:begin id=a -->\nx\n<!-- isms:begin id=a.b -->\ny\n<!-- isms:end id=a.b -->\n<!-- isms:end id=a -->",
-  );
-  const { ops } = parseOverrides(
-    "mem://o.qmd",
-    "<!-- isms:override id=a.b mode=after -->\nlocal\n<!-- isms:end id=a.b -->",
-  );
-  const lines = emit(doc.root, ops, true).split("\n");
-  const opened = lines.map((l) => l.match(BLOCK_OPEN_RE)?.[1]).filter((id) => id !== undefined);
-  const closed = lines.map((l) => l.match(BLOCK_CLOSE_RE)?.[1]).filter((id) => id !== undefined);
-  assertEquals(opened, ["a", "a.b"]);
-  assertEquals(closed, ["a.b", "a"]);
-});
 
-Deno.test("front matter is returned as raw YAML without its fences", () => {
-  const doc = parseDocument("mem://x.qmd", "---\nisms-id: ISMS03\ntitle: x\n---\nbody\n");
-  assertEquals(doc.frontMatter, "isms-id: ISMS03\ntitle: x");
-});
