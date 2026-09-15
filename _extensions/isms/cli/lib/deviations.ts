@@ -448,6 +448,7 @@ export function renderRegister(input: RegisterInput): string {
         ``,
         `Not adopted · approved by ${cell(u.approvedBy)} on ${cell(u.approvedDate)}.`,
         `**Reason:** ${cell(u.reason)}`,
+        ``
       );
     }
     out.push(`## Register {#register}`, ``);
