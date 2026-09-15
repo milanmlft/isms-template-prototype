@@ -72,9 +72,9 @@ quarto update milanmlft/isms-template-prototype
 
 Almost everything about this repo follows from one distinction:
 
-|                         | Owned by                 | Lives in            | Contains                                                                |
-| ----------------------- | ------------------------ | ------------------- | ----------------------------------------------------------------------- |
-| **Baseline**            | the template maintainers | `_extensions/isms/` | `manifest.yml`, authored policy sources in `docs/`, the composition CLI |
+|                         | Owned by                 | Lives in            | Contains                                                                 |
+| ----------------------- | ------------------------ | ------------------- | ------------------------------------------------------------------------ |
+| **Baseline**            | the template maintainers | `_extensions/isms/` | `manifest.yml`, authored policy sources in `docs/`, the composition CLI  |
 | **Institution project** | the adopting institution | repo root           | `_quarto.yml`, `_variables.yml`, `_isms.yml`, `index.qmd`, `_overrides/` |
 
 `_extensions/isms/` is the artefact that gets vendored into a downstream project by
@@ -93,8 +93,8 @@ its baseline source is never read. Then, for each remaining document in `manifes
 
 1. parses the baseline `.qmd` into a tree of named blocks (`lib/blocks.ts`);
 2. loads `_overrides/<ID>.qmd` if it exists, and validates every override against that tree;
-3. re-emits the front matter merged with any the override file sets, a `DO NOT EDIT BY HAND`
-   banner, and the body with overrides spliced in, wrapping each block in a provenance comment;
+3. re-emits the front matter merged with any the override file sets, a `DO NOT EDIT BY HAND` banner,
+   and the body with overrides spliced in, wrapping each block in a provenance comment;
 4. records each override's governance metadata, and the section it landed in, for the register;
 5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** anything under `docs/` not in the
    current result set — so removing a document from the manifest removes its output, and so does
@@ -140,11 +140,11 @@ shows that anything changed. Treat an asset referenced from an approved override
 approval only as long as its bytes are unchanged; a content swap needs its own review, which this
 pipeline does not currently prompt for.
 
-The register is a snapshot of the present state, not a history. Deleting an override, or
-re-adopting a document, removes its entry with no trace on the page; the history lives in git. That
-is deliberate — the page carries no timestamp, so it does not churn on every render — but it means
-the register answers "what is true now", not "what was ever decided". It matters most for
-un-adoption, where the entry is the only record that the document was ever declined at all.
+The register is a snapshot of the present state, not a history. Deleting an override, or re-adopting
+a document, removes its entry with no trace on the page; the history lives in git. That is
+deliberate — the page carries no timestamp, so it does not churn on every render — but it means the
+register answers "what is true now", not "what was ever decided". It matters most for un-adoption,
+where the entry is the only record that the document was ever declined at all.
 
 The fill-in-the-blank case above has the same gap from the other side. An institution can supply a
 file at a path the baseline references but does not ship — deliberately not a collision — but no
@@ -185,8 +185,8 @@ documents:
   ISMS08:
     adopted: false
     reason: >-
-      Change management is governed by the central IT change process, which is audited
-      separately under the same certification.
+      Change management is governed by the central IT change process, which is audited separately
+      under the same certification.
     approved-by: Operational Management Group
     approved-date: 2026-09-01
 ```
@@ -197,12 +197,11 @@ direction is deliberate: a document added by a future baseline arrives **adopted
 `quarto update`, rather than going quietly missing from an ISMS whose author never knew it had been
 written.
 
-**`reason` is required.** Leave it out and the render stops with `_isms.yml:<line>:`. This is
-stricter than the equivalent attributes on a block override, on purpose: an override leaves its text
-in the composed document, wrapped in a provenance marker, so there is something to find and question
-later. An un-adopted document leaves nothing anywhere. Its entry in the deviations register is the
-whole audit record, and `(not recorded)` cannot be the entire account of the largest departure the
-system permits.
+**`reason` is required.** This is stricter than the equivalent attributes on a block override, on
+purpose: an override leaves its text in the composed document, wrapped in a provenance marker, so
+there is something to find and question later. An un-adopted document leaves nothing anywhere. Its
+entry in the deviations register is the whole audit record, and `(not recorded)` cannot be the
+entire account of the largest departure the system permits.
 
 `approved-by` and `approved-date` behave exactly as they do on an override: a missing one warns with
 a `file:line` and renders as `(not recorded)`, because an approval may legitimately still be in
@@ -286,10 +285,10 @@ published prose: it is rendered on the register and indexed by the site search.
 
 ### Front matter
 
-The override file's own front matter is your front matter. Every key except the reserved
-`document:` is merged into the composed document's, and `docs/_preamble.qmd` prints most of them
-at the top of the page — so this is how you replace the baseline's placeholder
-`document-author: Policy Owner` and `approver: Approval Body` with the real thing.
+The override file's own front matter is your front matter. Every key except the reserved `document:`
+is merged into the composed document's, and `docs/_preamble.qmd` prints most of them at the top of
+the page — so this is how you replace the baseline's placeholder `document-author: Policy Owner` and
+`approver: Approval Body` with the real thing.
 
 ```yaml
 ---
@@ -309,20 +308,20 @@ Anything else — a scalar, a list, an explicit `null` — replaces the baseline
 
 Four keys are refused, and the render stops with a `file:line`:
 
-| Key                    | Why                                                                     |
-| ---------------------- | ----------------------------------------------------------------------- |
-| `isms-id`              | it is the ID your overrides are keyed on                                |
-| `baseline-doc-version` | it records which baseline release the document was composed from        |
-| `filename`             | it names the composed file, which the manifest decides                  |
-| `author`               | Quarto renders it as a second byline — set `document-author` instead    |
+| Key                    | Why                                                                  |
+| ---------------------- | -------------------------------------------------------------------- |
+| `isms-id`              | it is the ID your overrides are keyed on                             |
+| `baseline-doc-version` | it records which baseline release the document was composed from     |
+| `filename`             | it names the composed file, which the manifest decides               |
+| `author`               | Quarto renders it as a second byline — set `document-author` instead |
 
-A key that is not in the baseline front matter is allowed but warns, because the likeliest cause
-is a typo in one that is. An unquoted `2026-07-14` is a date to YAML, not a string; it is
-normalised back to `2026-07-14` rather than published as a UTC timestamp.
+A key that is not in the baseline front matter is allowed but warns, because the likeliest cause is
+a typo in one that is. An unquoted `2026-07-14` is a date to YAML, not a string; it is normalised
+back to `2026-07-14` rather than published as a UTC timestamp.
 
-Front-matter changes are **not** deviations and get no row in the register: replacing a
-placeholder author with a real name is adopting the baseline, not departing from it. A file
-carrying only front-matter keys leaves its document listed as adopted verbatim.
+Front-matter changes are **not** deviations and get no row in the register: replacing a placeholder
+author with a real name is adopting the baseline, not departing from it. A file carrying only
+front-matter keys leaves its document listed as adopted verbatim.
 
 ### The deviations register
 
@@ -342,9 +341,9 @@ missing page is not.
 
 The register also accounts for the documents you have **not** adopted. Its Coverage table is a
 roll-call of every document the baseline ships, adopted or not, so a missing row is as visible as a
-wrong one; an un-adopted row carries no document link, because there is no composed document to
-link to. The reason and approval live in a section of their own, and the baseline text is cited by
-path rather than quoted — unlike a `mode=delete`, whose text exists nowhere else in the output, an
+wrong one; an un-adopted row carries no document link, because there is no composed document to link
+to. The reason and approval live in a section of their own, and the baseline text is cited by path
+rather than quoted — unlike a `mode=delete`, whose text exists nowhere else in the output, an
 un-adopted document's source still ships inside the vendored baseline.
 
 ### Provenance
@@ -372,10 +371,10 @@ quarto run _tests/run.ts          # the tests
 quarto run _tests/typecheck.ts    # type-check isms.ts, which no test imports
 ```
 
-The suite needs no toolchain beyond the one requirement above: it runs on the Deno that ships
-inside Quarto, resolves imports through Quarto's own import map, and fetches nothing from the
-network. Nothing depends on a render having happened, so both commands work from a fresh clone. CI
-runs them on every pull request.
+The suite needs no toolchain beyond the one requirement above: it runs on the Deno that ships inside
+Quarto, resolves imports through Quarto's own import map, and fetches nothing from the network.
+Nothing depends on a render having happened, so both commands work from a fresh clone. CI runs them
+on every pull request.
 
 Almost every test builds a throwaway ISMS project in a temporary directory and drives the
 composition CLI against it, which is how the fail-loud paths — an override on a block that does not
