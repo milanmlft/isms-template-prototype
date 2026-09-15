@@ -65,9 +65,6 @@ export function project(spec: FixtureSpec): string {
   const root = Deno.makeTempDirSync({ prefix: "isms-fixture-" });
   const baseline = join(root, "_extensions", "isms");
 
-  // No `blocks:` is emitted. The list is declarative — the CLI never reads it — so writing one into
-  // a fixture manifest would suggest an effect it does not have. It is validated against the real
-  // baseline sources in manifest_test.ts, which is the only place it means anything.
   const entries: string[] = [];
   for (const [id, raw] of Object.entries(spec.docs)) {
     const doc: DocSpec = typeof raw === "string" ? { body: raw } : raw;

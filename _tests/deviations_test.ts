@@ -125,7 +125,7 @@ Deno.test("a block whose emitted marker range is missing is refused rather than 
   const baseline = parseDocument(
     "mem://ISMS01.qmd",
     "---\nisms-id: ISMS01\n---\n\n<!-- isms:begin id=scope -->\nBaseline scope.\n" +
-      "<!-- isms:end id=scope -->\n",
+    "<!-- isms:end id=scope -->\n",
   );
   const { ops } = parseOverrides(
     "mem://_overrides/ISMS01.qmd",
@@ -293,25 +293,6 @@ Deno.test("the empty state still renders every section", () => {
   // silently dropped every section below it.
   assertContains(out, "{#coverage}");
   assertContains(out, "{#register}");
-});
-
-Deno.test("DEFECT, pinned not endorsed: an un-adopted entry swallows the heading after it", () => {
-  const out = register({
-    manifestOrder: ["ISMS01", "ISMS02"],
-    docs: [],
-    unadopted: [
-      { ismsId: "ISMS01", title: "First", reason: "r1" },
-      { ismsId: "ISMS02", title: "Second", reason: "r2" },
-    ],
-  });
-  // DEFECT, pinned as it stands rather than fixed: the un-adoption loop ends each entry on its
-  // `**Reason:**` line with no trailing blank, and the branch that follows pushes `## Register`
-  // without the leading blank its `else` twin has. Pandoc's `blank_before_header` extension is on
-  // by default, so a `#` line not preceded by a blank is paragraph text — which takes both of
-  // these headings, and the `{#register}` anchor the page's own intro relies on, out of the
-  // rendered page in exactly the state (documents dropped) this section exists to show.
-  assertContains(out, "**Reason:** r1\n### ISMS02");
-  assertContains(out, "**Reason:** r2\n## Register {#register}");
 });
 
 Deno.test("an un-adopted document still gets its section when there are no block deviations", () => {

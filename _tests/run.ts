@@ -15,10 +15,6 @@
 //
 import { DENO_BASE_FLAGS, quartoImportMap } from "./support/quarto.ts";
 
-// `_tests/` is handed to `deno test` as a relative path below, so the working directory decides
-// which suite runs — or whether one is found at all. Say that here rather than letting Deno report
-// a missing path. (No test needs the cwd itself: manifest_test.ts locates the project from its own
-// module URL, and every other file builds fixtures in temp dirs.)
 try {
   Deno.statSync("_quarto.yml");
 } catch {

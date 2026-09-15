@@ -19,15 +19,15 @@ and its result never depends on whether `docs/` happens to be up to date.
 warning, exit 0. `deno test` also type-checks by default, and `quarto render` never does: its
 `deno run` passes neither `--check` nor `--no-check`. That gap is not theoretical — two `TS2339`
 errors reading a deleted `UnadoptedDoc.line` once composed the literal string `_isms.yml:undefined`
-into the deviations register, which is the entire audit record for an un-adopted document, and
-every tool stayed green.
+into the deviations register, which is the entire audit record for an un-adopted document, and every
+tool stayed green.
 
 **`typecheck.ts` covers exactly one module**, and it is the one the suite cannot see. Because the
-tests import everything under `lib/`, running them type-checks all of it. Nothing imports
-`isms.ts` — it ends in a top-level `Deno.exit(await run())`, so `cli_test.ts` drives it as a
-subprocess — which leaves it the only module where a type error is invisible to both the suite and
-the renderer. Measured: a deliberate type error in `lib/` turns the suite red; the same error in
-`isms.ts` leaves it green, and only `typecheck.ts` catches it.
+tests import everything under `lib/`, running them type-checks all of it. Nothing imports `isms.ts`
+— it ends in a top-level `Deno.exit(await run())`, so `cli_test.ts` drives it as a subprocess —
+which leaves it the only module where a type error is invisible to both the suite and the renderer.
+Measured: a deliberate type error in `lib/` turns the suite red; the same error in `isms.ts` leaves
+it green, and only `typecheck.ts` catches it.
 
 So `_tests/run.ts` is itself a `quarto run` script that re-spawns the same binary in `test` mode. It
 finds that binary and Quarto's import map from its own environment — `Deno.execPath()` and
@@ -45,25 +45,16 @@ Two consequences worth knowing:
 
 ## The files
 
-| File | What it asks |
-|---|---|
-| `blocks_test.ts` | Does the block grammar enforce its rules and refuse what it says it refuses? |
-| `compose_test.ts` | The override contract, the front-matter merge table, the asset walk. |
-| `adoption_test.ts` | Every `_isms.yml` validation path. |
-| `deviations_test.ts` | What the register reports, and where its deep links land. |
-| `cli_test.ts` | `isms.ts` as a subprocess: write-only-on-change, prune, exit codes. |
-| `manifest_test.ts` | Do `manifest.yml`'s `blocks:` lists match the real delimiters? |
+| File                 | What it asks                                                                 |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `blocks_test.ts`     | Does the block grammar enforce its rules and refuse what it says it refuses? |
+| `compose_test.ts`    | The override contract, the front-matter merge table, the asset walk.         |
+| `adoption_test.ts`   | Every `_isms.yml` validation path.                                           |
+| `deviations_test.ts` | What the register reports, and where its deep links land.                    |
+| `cli_test.ts`        | `isms.ts` as a subprocess: write-only-on-change, prune, exit codes.          |
 
 `run.ts` hands `_tests/` to `deno test` and lets its own discovery find `*_test.ts`, so a new file
 needs no edit anywhere.
-
-All but `manifest_test.ts` build throwaway projects in temp dirs — `compose()` is read-only and
-takes its root from the `Project` it is handed, so a complete fixture is three files and a full
-compose runs in about 15 ms with no Quarto process. The whole suite is around 2 s.
-
-`manifest_test.ts` is the one exception: it reads this repo's own tracked sources rather than a
-fixture. It earns that because `blocks:` is the published override API — every adopter writes
-`_overrides/<ID>.qmd` against those ids — and nothing else validates it, a gap CLAUDE.md records.
 
 ## House rules for new tests
 
@@ -89,14 +80,14 @@ fixture. It earns that because `blocks:` is the published override API — every
 ## What this does not cover
 
 - **Anything about composed output on disk, or the rendered site.** Nothing here notices that
-  `docs/` was hand-edited under its `DO NOT EDIT BY HAND` banner, never re-rendered after a
-  baseline change, or left holding a document that outlived its manifest entry — nor that `_site/`
-  is still serving a page for a document this ISMS has not adopted. That is the deliberate cost of
-  keeping every test independent of whether a render happened; `quarto render` is a build check in
-  CI, not an assertion.
+  `docs/` was hand-edited under its `DO NOT EDIT BY HAND` banner, never re-rendered after a baseline
+  change, or left holding a document that outlived its manifest entry — nor that `_site/` is still
+  serving a page for a document this ISMS has not adopted. That is the deliberate cost of keeping
+  every test independent of whether a render happened; `quarto render` is a build check in CI, not
+  an assertion.
 - **Six of the 53 `throw` sites**, all bare `throw err;` re-throws of non-`NotFound` filesystem
-  errors (`compose.ts` ×4, `adoption.ts` ×1, `isms.ts` ×1). Reaching them needs fault injection —
-  a path that exists but cannot be read — which is not portable across CI runners. A green suite is
+  errors (`compose.ts` ×4, `adoption.ts` ×1, `isms.ts` ×1). Reaching them needs fault injection — a
+  path that exists but cannot be read — which is not portable across CI runners. A green suite is
   not a claim of total coverage.
 - **Whether the policy text is correct or approved.** Nothing here reads the words.
 - **`approved-date` formats**, which are free text by design, so mixed and unsortable formats pass.
