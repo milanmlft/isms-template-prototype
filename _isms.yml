@@ -1,0 +1,18 @@
+# Which baseline documents this ISMS adopts.
+#
+# Absence is the normal case: a document with no entry here is adopted. List exceptions only,
+# so that a document added by a future baseline arrives adopted on `quarto update` rather than
+# silently going missing from an ISMS whose author never knew it had been written.
+#
+# `reason` is required. An un-adopted document leaves no trace in the composed site, so the
+# entry in the deviations register is the only record of the decision.
+#
+# EXAMPLE VALUES, REPLACE ME.
+documents:
+  ISMS08:
+    adopted: false
+    reason: >-
+      Change management for the {{< var environment_abbr >}} is governed by the central IT
+      change process, which is audited separately under the same certification.
+    approved-by: Operational Management Group
+    approved-date: 2026-09-01

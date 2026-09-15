@@ -7,6 +7,7 @@ import { equals } from "stdlib/bytes";
 import { loadProject } from "./lib/project.ts"
 import { type Asset, compose, COMPOSED_DIR, foldPath } from "./lib/compose.ts";
 import { DEVIATIONS_PATH } from "./lib/deviations.ts";
+import { ISMS_CONFIG_PATH } from "./lib/adoption.ts";
 
 function writeAll(root: string, files: Map<string, string>): string[] {
   const written: string[] = [];
@@ -100,16 +101,38 @@ async function run(): Promise<number> {
   const overrides = result.docs.reduce((n, d) => n + d.deviations.length, 0);
   const localAssets = [...result.assets.values()].filter((a) => a.origin === "override").length;
   const localAssetsNote = localAssets > 0 ? ` (${localAssets} local)` : "";
+  // Yellow, like the prune line: both report something absent that a reader might expect to be
+  // there. An un-adoption is the largest deviation the system permits, so it belongs on every
+  // render rather than only in the register.
+  const notAdopted = result.unadopted.length > 0
+    ? ` · ${yellow(String(result.unadopted.length))} not adopted`
+    : "";
   console.log(
     `[isms] composed ${green(String(result.docs.length))} documents from baseline ` +
-    `${cyan(baselineVersion)} · ${overrides} local override${overrides === 1 ? "" : "s"} · ` +
-    `${assets.length} asset${assets.length === 1 ? "" : "s"}${localAssetsNote}`,
+    `${cyan(baselineVersion)}${notAdopted} · ${overrides} local override` +
+    `${overrides === 1 ? "" : "s"} · ${assets.length} asset` +
+    `${assets.length === 1 ? "" : "s"}${localAssetsNote}`,
   );
   for (const doc of result.docs) {
     const local = doc.deviations.length > 0 ? ` (${doc.deviations.length} local)` : "";
     console.log(dim(`         ${doc.path}${local}`));
   }
   console.log(dim(`         ${DEVIATIONS_PATH} (${overrides} deviation${overrides === 1 ? "" : "s"})`));
+
+  // Before the prune stanza, so the first render after un-adopting reads as cause and effect:
+  // "1 document not adopted" immediately above "pruned docs/ISMS08-….qmd".
+  if (result.unadopted.length > 0) {
+    console.log(
+      `[isms] ${yellow(String(result.unadopted.length))} document` +
+      `${result.unadopted.length === 1 ? "" : "s"} not adopted (${ISMS_CONFIG_PATH})`,
+    );
+    for (const doc of result.unadopted) {
+      // The reason is free prose and may run to a paragraph; the register carries it in full.
+      const why = doc.reason.replace(/\s+/g, " ").trim();
+      const short = why.length > 96 ? `${why.slice(0, 95)}…` : why;
+      console.log(dim(`         ${doc.ismsId} · ${short}`));
+    }
+  }
 
   if (removed.length > 0) {
     console.log(

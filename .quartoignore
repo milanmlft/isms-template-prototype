@@ -7,3 +7,8 @@ _dev/
 _site/
 docs/
 ./deviations.qmd
+
+# An adoption decision is this project's, not an adopter's. Inheriting it would plant a real
+# approver's name and date against a decision they never made, and silently drop a policy
+# document from their ISMS. The README carries the example instead.
+_isms.yml
