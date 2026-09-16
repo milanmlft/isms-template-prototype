@@ -8,13 +8,6 @@ _site/
 docs/
 ./deviations.qmd
 
-# The test suite. Underscore-prefixed so Quarto's `**/_*` glob never renders its fixtures as pages,
-# but that glob governs rendering only — `quarto use template` honours nothing of the sort, and
-# Quarto's built-in template excludes cover `.*` and `_extensions`, not `_*`. Without this line the
-# whole suite is copied into every adopting institution's project.
+# Don't vendor tests into adopting insitutions
 _tests/
 
-# An adoption decision is this project's, not an adopter's. Inheriting it would plant a real
-# approver's name and date against a decision they never made, and silently drop a policy
-# document from their ISMS. The README carries the example instead.
-_isms.yml
