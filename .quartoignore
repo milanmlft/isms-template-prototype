@@ -6,6 +6,7 @@ CLAUDE.md
 _dev/
 _site/
 docs/
+_docs/
 ./deviations.qmd
 
 # Don't vendor tests into adopting insitutions
