@@ -17,13 +17,30 @@ quarto render                              # compose + build the site into _site
 quarto preview                             # live-reloading dev server
 quarto run _extensions/isms/cli/isms.ts    # run composition only, without rendering
 
-# Verification pass (there is no test suite). See the isms-verify skill for how to read failures.
-quarto render && quarto run .pi/skills/isms-verify/scripts/check.ts --site
+# Tests. See _tests/README.md for the house rules for adding cases.
+quarto run _tests/run.ts                   # the suite; needs no render
+quarto run _tests/typecheck.ts             # type-check isms.ts, which no test imports
 ```
 
-There is no test suite, linter, or build step beyond Quarto. The CLI is Deno TypeScript run
-through `quarto run` — the bare `stdlib/...` import specifiers are resolved by Quarto's own
-import map, so `deno run` on these files will fail.
+No test depends on a render having happened: each builds its own throwaway ISMS project in a temp
+dir, or reads tracked source files. CI runs both commands plus a `quarto render` build check on
+every pull request (`.github/workflows/isms.yml`). There is no linter and no build step beyond
+Quarto.
+
+The CLI is Deno TypeScript run through `quarto run`, and the bare `stdlib/...` import specifiers
+are resolved by Quarto's own import map — so a plain `deno run` on these files fails unless it is
+given that map. `_tests/run.ts` locates it the way `quarto.js` does, from `$DENO_DIR`.
+
+**`quarto render` never type-checks.** It shells out to `deno run` with neither `--check` nor
+`--no-check`, so a type error in the CLI is invisible to it and reaches the composed output as
+whatever the expression evaluates to. That is how two `TS2339` errors reading a deleted
+`UnadoptedDoc.line` once published `_isms.yml:undefined` as the audit citation for an un-adopted
+document.
+
+`deno test` *does* type-check, so running the suite covers every module under `lib/` — the tests
+import them. `isms.ts` is the exception: nothing imports it (it exits at the top level, so
+`cli_test.ts` drives it as a subprocess), which makes `_tests/typecheck.ts` the only thing that
+checks it. Run both after touching `_extensions/isms/cli/`.
 
 ### Sandboxed sessions (gondolin)
 
@@ -80,9 +97,14 @@ Never hand-edit them. The extension's sidebar picks the documents up via `auto: 
 ### manifest.yml is a public API
 
 The `blocks:` list under each document enumerates the block IDs downstream overrides may target
-by name. Removing or renaming one is a MAJOR release for the baseline. Note the manifest's
-`blocks:` lists are currently declarative only — nothing validates them against the actual
-delimiters in the source documents.
+by name. Removing or renaming one is a MAJOR release for the baseline.
+
+The lists are declarative — the CLI never reads them, and composition neither consults nor enforces
+them. `_tests/manifest_test.ts` is what holds them to the sources, diffing both directions with the
+project's own parser: a block in a source but not in `blocks:` hides an overridable region from
+every adopter, and a `blocks:` entry with no delimiter invites an override composition will reject.
+It lives in the test suite rather than in `compose()` because an adopter's render should not fail
+over a defect only the baseline's maintainer can fix.
 
 ### Block grammar (`lib/blocks.ts`)
 

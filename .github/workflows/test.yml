@@ -1,0 +1,37 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: isms-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      QUARTO_RUN_NO_NETWORK: "true"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: "1.8.25" # _extension.yml declares quarto-required: ">=1.8.0"
+
+      - name: Test
+        run: quarto run _tests/run.ts
+
+      - name: Type-check isms.ts
+        run: quarto run _tests/typecheck.ts
+
+        # Check if full site renders
+      - name: Render
+        run: quarto render
