@@ -52,9 +52,19 @@ Two consequences worth knowing:
 | `adoption_test.ts`   | Every `_isms.yml` validation path.                                           |
 | `deviations_test.ts` | What the register reports, and where its deep links land.                    |
 | `cli_test.ts`        | `isms.ts` as a subprocess: write-only-on-change, prune, exit codes.          |
+| `manifest_test.ts`   | Do `manifest.yml`'s `blocks:` lists match the real delimiters?               |
 
 `run.ts` hands `_tests/` to `deno test` and lets its own discovery find `*_test.ts`, so a new file
 needs no edit anywhere.
+
+All but `manifest_test.ts` build throwaway projects in temp dirs — `compose()` is read-only and
+takes its root from the `Project` it is handed, so a complete fixture is three files and a full
+compose runs in about 15 ms with no Quarto process. The whole suite is around 2 s.
+
+`manifest_test.ts` is the one exception: it reads this repo's own tracked sources rather than a
+fixture. It earns that because `blocks:` is the published override API — every adopter writes
+`_overrides/<ID>.qmd` against those ids — and nothing else validates it, least of all `compose()`,
+which never reads the lists at all.
 
 ## House rules for new tests
 

@@ -442,8 +442,13 @@ documents:
 
 The `blocks:` list enumerates the IDs downstream overrides may target by name. **Removing or
 renaming one is a MAJOR release for the baseline**, because it breaks institutions' override files.
-Note that these lists are currently declarative only — nothing yet validates them against the
-delimiters actually present in the source documents.
+
+The lists are declarative: composition never reads them. `_tests/manifest_test.ts` is what holds
+them to the sources, diffing both directions with the project's own parser — a block in a source but
+not in `blocks:` hides an overridable region from every adopter, and a `blocks:` entry with no
+delimiter invites an override that composition will then reject. It is checked there rather than in
+`compose()` so that an adopter's render never fails over a defect only the baseline's maintainer can
+fix.
 
 ## Project layout
 
@@ -479,4 +484,3 @@ Not yet built:
 - **Validation of `approved-date`.** Free text in override attributes and in `_isms.yml` alike, so
   `14/07/2026` and `2026-07-14` can coexist in one register, unsortable.
 - **Appending institution-only sections** outside the baseline block set.
-- **Manifest/source cross-validation** of the `blocks:` lists.
