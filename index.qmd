@@ -2,5 +2,5 @@
 title: "{{< var organisation >}} Research Data ISMS"
 ---
 
-This is {{< var organisation >}}'s Information Security Management System for research data.
+This is {{< var organisation >}}’s Information Security Management System for research data.
 

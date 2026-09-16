@@ -329,6 +329,17 @@ export function isAncestor(ancestor: string, id: string): boolean {
 }
 
 /**
+ * The provenance markers `emit()` writes around every non-root block, as patterns.
+ *
+ * Exported because two other modules re-read them: the deviations register resolves its deep
+ * links from the emitted ranges, and composition scans them to name the block a dangling
+ * cross-reference sits in. Defined beside the code that writes them so the two cannot drift —
+ * `anchorFor()` throws rather than silently voiding every deep link when they do.
+ */
+export const BLOCK_OPEN_RE = /^<!-- isms:block id=(\S+)/;
+export const BLOCK_CLOSE_RE = /^<!-- \/isms:block id=(\S+) -->$/;
+
+/**
  * Render a block tree to markdown with overrides applied.
  *
  * Text outside any block is emitted verbatim and is therefore NOT overridable — which is a

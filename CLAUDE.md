@@ -51,8 +51,8 @@ Two layers live in one repo, and the distinction drives almost every decision:
 - **The baseline** (`_extensions/isms/`) — the shared, versioned artefact. Contains
   `manifest.yml`, the authored policy sources under `docs/`, and the composition CLI. This
   directory is what gets vendored into a downstream institution's project.
-- **The institution project** (repo root) — `_quarto.yml`, `_variables.yml`, `index.qmd`, and
-  `_overrides/`. In this repo it doubles as the template's own demo/test project.
+- **The institution project** (repo root) — `_quarto.yml`, `_variables.yml`, `_isms.yml`,
+  `index.qmd`, and `_overrides/`. In this repo it doubles as the template's own demo/test project.
 
 ### Composition pipeline
 
@@ -60,14 +60,19 @@ Two layers live in one repo, and the distinction drives almost every decision:
 runs automatically on every render:
 
 1. `lib/project.ts` — `loadProject()` reads `_extensions/isms/manifest.yml`.
-2. `lib/compose.ts` — for each manifest document, parse the baseline `.qmd`, load and validate
-   `_overrides/<ID>.qmd` if present, apply the overrides, re-emit the merged front matter + a
-   `DO NOT EDIT BY HAND` banner + body.
-3. `lib/deviations.ts` — collects every override's governance metadata plus the anchor it landed
-   on, and renders `deviations.qmd`.
-4. `cli/isms.ts` — writes results to `<root>/docs/<ID>-<slug>.qmd` (only when content changed),
-   then **prunes** `docs/*.qmd` files not in the current result set, so un-adopting a document
-   removes its output.
+2. `lib/adoption.ts` — `loadAdoption()` reads `_isms.yml`, the institution's account of which
+   baseline documents it publishes. Documents recorded `adopted: false` are skipped by the loop
+   below, and their baseline source is never read.
+3. `lib/compose.ts` — for each adopted manifest document, parse the baseline `.qmd`, load and
+   validate `_overrides/<ID>.qmd` if present, apply the overrides, re-emit the merged front matter
+   + a `DO NOT EDIT BY HAND` banner + body.
+4. `lib/deviations.ts` — collects every override's governance metadata plus the anchor it landed
+   on, and the documents that were not adopted, and renders `deviations.qmd`.
+5. `cli/isms.ts` — writes results to `<root>/docs/<ID>-<slug>.qmd` (only when content changed),
+   then **prunes** `docs/*.qmd` files not in the current result set. Two different decisions land
+   here: removing a document from the manifest (a *baseline* decision) and `adopted: false` in
+   `_isms.yml` (an *institution* decision). Both remove the output, and neither needs code beyond
+   the prune that was already there.
 
 `docs/` at the repo root and `deviations.qmd` are therefore generated output, both gitignored.
 Never hand-edit them. The extension's sidebar picks the documents up via `auto: "docs/*.qmd"`.
@@ -174,6 +179,41 @@ Not yet built: appending institution-only sections outside the baseline block se
 of `approved-date` (free text today, so date formats can be mixed and unsortable within one
 register).
 
+### Adoption (`_isms.yml`, `lib/adoption.ts`)
+
+An institution declines a whole baseline document by naming it in `_isms.yml` at the project root
+with `adopted: false`, plus `reason` / `approved-by` / `approved-date`. The file lives outside
+`_extensions/` because that directory is replaced wholesale on `quarto update`; a decision recorded
+inside it would not survive the first upgrade.
+
+It is a **denylist**: a document with no entry is adopted, so a document added by a future baseline
+arrives adopted rather than silently vanishing from an ISMS whose author never knew it was written.
+`adopted: true` is a legal no-op, so a reviewed decision to adopt can be recorded, and reversed by
+changing one word.
+
+- **A missing `reason` is a hard error**, unlike the same attribute on a block override. The
+  asymmetry is the point: an override leaves its text in the composed document wrapped in a
+  provenance marker, whereas an un-adopted document leaves nothing anywhere, so the register entry
+  is the entire audit record. `approved-by`/`approved-date` still only warn — an approval may be
+  mid-flight — and share `governanceGaps()` with overrides so the wording cannot drift.
+- **Four hard errors**, all instances of the house rule that a silent no-op on something someone
+  formally approved is the worst available outcome: an ID absent from the manifest (listing the
+  ones that exist, and naming a baseline update as a cause); an `_overrides/<ID>.qmd` for an
+  un-adopted document, whose content could never reach the output; un-adopting every document,
+  which crashes Quarto in `sidebarItemsFromAuto` once `auto: "docs/*.qmd"` matches nothing; and
+  `adopted: no`, which YAML resolves to the *string* `"no"` and would otherwise read as truthy.
+- `approved-date: 2026-09-01` parses to a JS `Date`, exactly as in override front matter, and is
+  coerced back with the same rule `normaliseDates()` uses. The format is not otherwise validated,
+  deliberately: the override attribute is free text, and making `_isms.yml` stricter would split
+  one governance convention in two.
+- `keyLine()` is a second, indentation-aware line-number helper alongside `compose.ts`'s
+  front-matter-specific `metaLine()`. They answer different questions and sharing them would close
+  the `adoption.ts → compose.ts` cycle; if a third caller appears, promote both to `lib/yaml-lines.ts`.
+- **Dangling cross-document links warn rather than fail.** The scan reads the *composed* output,
+  not the baseline sources — an override can delete such a link or add one — and names the block
+  the link sits in, so the institution knows what to override. A warning because Quarto itself only
+  warns on an unresolvable link target; refusing to compose would be stricter than the renderer.
+
 ### The deviations register (`lib/deviations.ts`)
 
 Generated at the **project root**, not in `docs/`: it is a report about the controlled documents,
@@ -201,6 +241,22 @@ Quoted text in the detail sections is dedented (overrides are authored at the in
 into, and Pandoc would read a deep indent as a code block), has bare `#sec-...` links rebased onto
 the composed document, and has its headings demoted and stripped of explicit anchors so a quote
 cannot pose as a section of the register or steal the policy's id.
+
+`renderRegister()` has **exactly one return, at the end.** Section emptiness is handled inside the
+empty section, never by returning from the function. The old `total === 0` early return sat
+mid-page and would silently drop every section below it — which is precisely how an un-adopted
+document would vanish from the one page whose job is to show it, in the state (no block deviations,
+one document dropped) that this feature makes common.
+
+An un-adopted document must be **visible**, not merely absent: the Coverage table is a roll-call of
+every document the manifest ships, which is why `renderRegister()` takes `manifestOrder` rather than
+deriving order from its two lists — two ordered subsequences cannot be re-interleaved once one is
+missing from the middle. An ID in neither list **throws**, on the same principle as `anchorFor()`.
+Un-adoption entries use the `unadopted-<id>` anchor namespace rather than `detailAnchor(id,
+"unadopted")`, so a baseline block one day named `unadopted` cannot collide with one. The register
+**never links to a path Quarto does not render**: the un-adopted document's baseline source under
+`_extensions/` is cited as inline code, because a link there resolves on disk, satisfies a naive
+existence check, and 404s in the published site.
 
 The page deliberately carries **no generation timestamp**: `writeAll` writes only when content
 differs, so a clock value would mean git churn and a changed Quarto input on every render.

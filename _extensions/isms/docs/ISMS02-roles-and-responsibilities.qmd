@@ -90,7 +90,7 @@ to establish, implement, maintain, and continually improve the {{< var isms_abbr
 
 ## The Information Governance Framework {#sec-framework}
 
-The high-level structure of the {{< var isms_abbr >}}'s Information Governance Framework is
+The high-level structure of the {{< var isms_abbr >}}’s Information Governance Framework is
 represented in the diagram below.
 
 <!-- isms:end id=framework.intro -->
@@ -105,22 +105,22 @@ represented in the diagram below.
 
 ### Top Management {#sec-framework-top-management}
 
-The {{< var isms_abbr >}} Top Management consists of {{< var organisation >}}'s
+The {{< var isms_abbr >}} Top Management consists of {{< var organisation >}}’s
 {{< var roles.senior_risk_owner >}} and the {{< var roles.top_management_body >}}, chaired by the
 {{< var roles.senior_risk_owner >}}. The {{< var roles.senior_risk_owner >}} is a member of
-{{< var organisation >}}'s executive and reports to the {{< var roles.executive_body >}}, providing
-a direct reporting line from the {{< var isms_abbr >}} to {{< var organisation >}}'s primary body
+{{< var organisation >}}’s executive and reports to the {{< var roles.executive_body >}}, providing
+a direct reporting line from the {{< var isms_abbr >}} to {{< var organisation >}}’s primary body
 responsible for operational management, which oversees institutional strategy, risk management, and
 key policies. The {{< var roles.senior_risk_owner >}} receives assurance that relevant processes,
-procedures and policies are in place to protect {{< var organisation >}}'s information assets. The
+procedures and policies are in place to protect {{< var organisation >}}’s information assets. The
 {{< var roles.top_management_body >}} receives reports from the {{< var roles.governance_body >}},
 holds it to account, and in turn provides advice and assurance to the
 {{< var roles.senior_risk_owner >}}.
 
-Full details of the {{< var roles.top_management_body >}}'s membership and responsibilities are set
+Full details of the {{< var roles.top_management_body >}}’s membership and responsibilities are set
 out in its terms of reference.
 
-Full details of {{< var organisation >}}'s formal committees are published on its governance pages.
+Full details of {{< var organisation >}}’s formal committees are published on its governance pages.
 
 <!-- isms:end id=framework.top-management -->
 
@@ -135,7 +135,7 @@ responsible for {{< var isms_abbr >}} policies, it may escalate risks to the
 {{< var roles.top_management_body >}} that cannot be resolved directly. Risk decisions are therefore
 ultimately owned by the {{< var roles.top_management_body >}}.
 
-The {{< var roles.governance_body >}} is composed of members of the {{< var isms_abbr >}}'s
+The {{< var roles.governance_body >}} is composed of members of the {{< var isms_abbr >}}’s
 governance, technical, and service teams. Full details of membership and responsibilities of
 individual roles are set out in its terms of reference.
 
@@ -152,7 +152,7 @@ the {{< var roles.governance_body >}} to ensure these environments are operating
 ## Resources {#sec-resources}
 
 Funding for the {{< var isms_abbr >}} and all {{< var environment_name >}}s is provided through
-{{< var organisation >}}'s {{< var roles.funding_body >}} structure. Top management requests funding
+{{< var organisation >}}’s {{< var roles.funding_body >}} structure. Top management requests funding
 from the {{< var roles.funding_body >}} in the form of business cases. Top management ensures
 sufficient resources are available. Where resource constraints pose risks to the organisation, top
 management escalates to the {{< var roles.executive_body >}}.
@@ -173,7 +173,7 @@ ensures they are competent to perform this work.
 
 <!-- isms:begin id=competence.procedure -->
 
-Staff competence and suitability are determined as part of {{< var organisation >}}'s recruitment
+Staff competence and suitability are determined as part of {{< var organisation >}}’s recruitment
 and selection procedure.
 
 <!-- isms:end id=competence.procedure -->
@@ -193,7 +193,7 @@ The training listed in the roles catalogue below is determined through a trainin
 Approved researcher training is designed to meet applicable external information governance
 assurance regimes and the requirements of the institution's data providers.
 {{< var organisation >}}-wide training is mandatory and designed by the
-{{< var roles.security_function >}} to meet the requirements of {{< var organisation >}}'s
+{{< var roles.security_function >}} to meet the requirements of {{< var organisation >}}’s
 obligations to data subjects.
 
 <!-- isms:end id=competence.requirements -->
@@ -325,7 +325,7 @@ raising issues and requesting improvements to the environment.
 | {{< var roles.executive_body >}}      | Oversight of {{< var organisation >}} and responsible for setting risk appetite and tolerance. See its terms of reference.                                                                                                                                                                                                                                                                         | NA                                                      |
 | {{< var roles.senior_risk_owner >}}   | As part of the {{< var roles.top_management_body >}}, the {{< var roles.senior_risk_owner >}} understands how information risks may impact the strategic academic goals of the organisation and takes ownership of the Research Information Governance Policy. Their responsibilities are set out separately.                                                                                      | {{< var roles.senior_risk_owner >}} training            |
 | {{< var roles.top_management_body >}} | Receives reports from the {{< var roles.governance_body >}}, provides advice and assurance to the {{< var roles.senior_risk_owner >}} and serves as top management for the {{< var isms_abbr >}}.<br>See its terms of reference.                                                                                                                                                                   | Members must read and understand the terms of reference |
-| {{< var roles.governance_body >}}     | Ensures that effective and informed decisions are made about the operation of {{< var organisation >}}'s {{< var isms_name >}} and that evidence of this is reported to the {{< var roles.top_management_body >}}. The {{< var roles.governance_body >}} may also escalate risks to the {{< var roles.top_management_body >}} that cannot be resolved by the group.<br>See its terms of reference. | Members must read and understand the terms of reference |
+| {{< var roles.governance_body >}}     | Ensures that effective and informed decisions are made about the operation of {{< var organisation >}}’s {{< var isms_name >}} and that evidence of this is reported to the {{< var roles.top_management_body >}}. The {{< var roles.governance_body >}} may also escalate risks to the {{< var roles.top_management_body >}} that cannot be resolved by the group.<br>See its terms of reference. | Members must read and understand the terms of reference |
 
 <!-- isms:end id=roles-catalogue.management -->
 
@@ -336,9 +336,9 @@ raising issues and requesting improvements to the environment.
 | Governance                     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                 |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | **Role**                       | **Responsibilities**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | **Competency and Awareness Requirement**                                        |
-| {{< var roles.ig_lead >}}      | Responsibility for the managerial operation of {{< var organisation >}}'s {{< var isms_name >}}, Information Governance framework, and compliance with applicable external information governance assurance regimes. Provides expertise to and liaises between the {{< var roles.senior_risk_owner >}} and research teams. Acts as the primary IG contact for all external parties and as a point of escalation for IG matters within {{< var organisation >}}.<br>Full details are set out in the IG Lead role description. | As detailed as part of recruitment in the job description, advert and interview |
+| {{< var roles.ig_lead >}}      | Responsibility for the managerial operation of {{< var organisation >}}’s {{< var isms_name >}}, Information Governance framework, and compliance with applicable external information governance assurance regimes. Provides expertise to and liaises between the {{< var roles.senior_risk_owner >}} and research teams. Acts as the primary IG contact for all external parties and as a point of escalation for IG matters within {{< var organisation >}}.<br>Full details are set out in the IG Lead role description. | As detailed as part of recruitment in the job description, advert and interview |
 | Information Governance Officer | Operational responsibility for the {{< var isms_name >}}, including but not limited to the maintenance of associated records and the provision of IG training.<br>Full details are set out in the IG Officer role description.                                                                                                                                                                                                                                                                                               | As detailed as part of recruitment in the job description, advert and interview |
-| Internal Auditor               | {{< var organisation >}}'s {{< var isms_abbr >}} internal auditor is independent of the {{< var isms_abbr >}} team and is responsible for assessing and reporting on all controls and parts of the standard within the 3-year certification cycle. Internal audits also extend to research teams’ compliance with the standard.                                                                                                                                                                                              | Suitable ISO 27001 auditor training                                             |
+| Internal Auditor               | {{< var organisation >}}’s {{< var isms_abbr >}} internal auditor is independent of the {{< var isms_abbr >}} team and is responsible for assessing and reporting on all controls and parts of the standard within the 3-year certification cycle. Internal audits also extend to research teams’ compliance with the standard.                                                                                                                                                                                              | Suitable ISO 27001 auditor training                                             |
 
 <!-- isms:end id=roles-catalogue.governance -->
 
@@ -363,11 +363,11 @@ raising issues and requesting improvements to the environment.
 | Organisation-wide Roles                    |                                                                                                                                                                                                                                |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Role**                                   | **Responsibilities**                                                                                                                                                                                                           |
-| Chief Information Security Officer (CISO)  | Responsible for {{< var organisation >}}'s corporate information security agenda. Advises and guides the {{< var roles.senior_risk_owner >}} on information security matters. Head of the {{< var roles.security_function >}}. |
-| {{< var roles.security_function >}}        | Responsible for {{< var organisation >}}'s overall stance on information security, including information security policies, security incident management, and liaison with law enforcement where required.                     |
-| Human Resources (HR)                       | HR is responsible for {{< var organisation >}}'s policies and processes covering recruitment, screening, disciplinary action, and termination of employment.                                                                   |
-| {{< var roles.funding_body >}}             | Provides resources to maintain and develop {{< var organisation >}}'s {{< var isms_name >}} and the {{< var environment_name >}}s and information systems.                                                                     |
-| {{< var roles.data_protection_function >}} | Responsible for providing key information for all staff, students and researchers by ensuring {{< var organisation >}}'s policies and codes of practice about data protection are implemented across all departments.          |
+| Chief Information Security Officer (CISO)  | Responsible for {{< var organisation >}}’s corporate information security agenda. Advises and guides the {{< var roles.senior_risk_owner >}} on information security matters. Head of the {{< var roles.security_function >}}. |
+| {{< var roles.security_function >}}        | Responsible for {{< var organisation >}}’s overall stance on information security, including information security policies, security incident management, and liaison with law enforcement where required.                     |
+| Human Resources (HR)                       | HR is responsible for {{< var organisation >}}’s policies and processes covering recruitment, screening, disciplinary action, and termination of employment.                                                                   |
+| {{< var roles.funding_body >}}             | Provides resources to maintain and develop {{< var organisation >}}’s {{< var isms_name >}} and the {{< var environment_name >}}s and information systems.                                                                     |
+| {{< var roles.data_protection_function >}} | Responsible for providing key information for all staff, students and researchers by ensuring {{< var organisation >}}’s policies and codes of practice about data protection are implemented across all departments.          |
 
 <!-- isms:end id=roles-catalogue.organisation-wide -->
 

@@ -75,7 +75,7 @@ Almost everything about this repo follows from one distinction:
 |                         | Owned by                 | Lives in            | Contains                                                                |
 | ----------------------- | ------------------------ | ------------------- | ----------------------------------------------------------------------- |
 | **Baseline**            | the template maintainers | `_extensions/isms/` | `manifest.yml`, authored policy sources in `docs/`, the composition CLI |
-| **Institution project** | the adopting institution | repo root           | `_quarto.yml`, `_variables.yml`, `index.qmd`, `_overrides/`             |
+| **Institution project** | the adopting institution | repo root           | `_quarto.yml`, `_variables.yml`, `_isms.yml`, `index.qmd`, `_overrides/` |
 
 `_extensions/isms/` is the artefact that gets vendored into a downstream project by
 `quarto use template`, and is replaced wholesale when the baseline is upgraded. Anything an
@@ -87,7 +87,9 @@ so `quarto preview` here shows what an adopter would see.
 ## How composition works
 
 `_extension.yml` registers `cli/isms.ts` as a Quarto `project.pre-render` hook, so composition runs
-on every render. For each document in `manifest.yml` the CLI:
+on every render. It first reads `_isms.yml`, if the institution has one, to learn which baseline
+documents this ISMS adopts; a document recorded there as `adopted: false` is skipped entirely, and
+its baseline source is never read. Then, for each remaining document in `manifest.yml`, the CLI:
 
 1. parses the baseline `.qmd` into a tree of named blocks (`lib/blocks.ts`);
 2. loads `_overrides/<ID>.qmd` if it exists, and validates every override against that tree;
@@ -95,9 +97,11 @@ on every render. For each document in `manifest.yml` the CLI:
    banner, and the body with overrides spliced in, wrapping each block in a provenance comment;
 4. records each override's governance metadata, and the section it landed in, for the register;
 5. writes the result to `docs/<ID>-<slug>.qmd`, and **prunes** anything under `docs/` not in the
-   current result set — so removing a document from the manifest removes its output.
+   current result set — so removing a document from the manifest removes its output, and so does
+   declining one in `_isms.yml`.
 
-It then writes `deviations.qmd`, the register of everything the institution changed.
+It then writes `deviations.qmd`, the register of everything the institution changed — including the
+documents it did not adopt.
 
 Non-`.qmd` files in the baseline `docs/` tree — images, diagram sources, anything a document
 references by relative path — are **mirrored** to the same relative position under the composed
@@ -136,6 +140,12 @@ shows that anything changed. Treat an asset referenced from an approved override
 approval only as long as its bytes are unchanged; a content swap needs its own review, which this
 pipeline does not currently prompt for.
 
+The register is a snapshot of the present state, not a history. Deleting an override, or
+re-adopting a document, removes its entry with no trace on the page; the history lives in git. That
+is deliberate — the page carries no timestamp, so it does not churn on every render — but it means
+the register answers "what is true now", not "what was ever decided". It matters most for
+un-adoption, where the entry is the only record that the document was ever declined at all.
+
 The fill-in-the-blank case above has the same gap from the other side. An institution can supply a
 file at a path the baseline references but does not ship — deliberately not a collision — but no
 override ran to put it there, so there is no `reason`/`approved-by`/`approved-date` and no line in
@@ -164,6 +174,69 @@ roles:
 
 Used in the text as `{{< var organisation >}}`, `{{< var roles.ig_lead >}}`,
 `{{< var review.access_review_period >}}`, and so on.
+
+## Customising: which documents you adopt
+
+The baseline manifest is authoritative on which documents _exist_. `_isms.yml`, at your project
+root, is your account of which of them your ISMS _publishes_:
+
+```yaml
+documents:
+  ISMS08:
+    adopted: false
+    reason: >-
+      Change management is governed by the central IT change process, which is audited
+      separately under the same certification.
+    approved-by: Operational Management Group
+    approved-date: 2026-09-01
+```
+
+**Absence is the normal case.** No `_isms.yml` means you adopt everything, and a document with no
+entry is adopted — you never need to write `adopted: true`. The file lists exceptions only. That
+direction is deliberate: a document added by a future baseline arrives **adopted** when you
+`quarto update`, rather than going quietly missing from an ISMS whose author never knew it had been
+written.
+
+**`reason` is required.** Leave it out and the render stops with `_isms.yml:<line>:`. This is
+stricter than the equivalent attributes on a block override, on purpose: an override leaves its text
+in the composed document, wrapped in a provenance marker, so there is something to find and question
+later. An un-adopted document leaves nothing anywhere. Its entry in the deviations register is the
+whole audit record, and `(not recorded)` cannot be the entire account of the largest departure the
+system permits.
+
+`approved-by` and `approved-date` behave exactly as they do on an override: a missing one warns with
+a `file:line` and renders as `(not recorded)`, because an approval may legitimately still be in
+progress.
+
+The effect is that the document is not composed: no page in `docs/`, no sidebar entry, no page in
+`_site/`, and any previously composed output is pruned on the next render. The baseline source stays
+in `_extensions/isms/`, because the extension is vendored whole — and assets it referenced are still
+mirrored into `docs/`, since mirroring is by path and not by reference.
+
+**The un-adoption is published, not hidden.** The document keeps its row in the register's Coverage
+roll-call, marked `Not adopted`, and gains an entry under "Documents not adopted" carrying your
+reason and approval. Absence is not evidence: an ISMS that simply omitted a document would look
+identical to one whose author had never heard of it.
+
+Four things are hard errors, all for the same reason — a silent no-op on a governance decision is
+the worst outcome available:
+
+- an ID that is not in the baseline manifest. The message lists the ones that are, and names a
+  baseline update as a likely cause, since that is what turns a valid entry into a stale one;
+- an `_overrides/<ID>.qmd` for a document you do not adopt, since nothing in it could ever reach the
+  output;
+- un-adopting every document, which would leave the sidebar's `auto:` glob matching nothing and
+  crash the render in Quarto rather than here;
+- `adopted: no`, which YAML reads as the string `"no"` rather than as `false`. Treating it as truthy
+  would silently adopt the very document you meant to drop.
+
+If another adopted document links to one you have dropped, composition warns and names the referring
+document, line and block, so you can override that block to remove or reword the link. A warning
+rather than an error, because Quarto itself only warns on an unresolvable link target — refusing to
+compose would be stricter than the renderer.
+
+To re-adopt, delete the entry and re-render. Its register entry disappears with it; see the
+limitation on the register being a snapshot rather than a history, above.
 
 ## Customising: local overrides
 
@@ -267,6 +340,13 @@ nothing to link to, the row links to the document instead.
 A project with no override files still gets a register, saying so. "Adopted verbatim" is evidence; a
 missing page is not.
 
+The register also accounts for the documents you have **not** adopted. Its Coverage table is a
+roll-call of every document the baseline ships, adopted or not, so a missing row is as visible as a
+wrong one; an un-adopted row carries no document link, because there is no composed document to
+link to. The reason and approval live in a section of their own, and the baseline text is cited by
+path rather than quoted — unlike a `mode=delete`, whose text exists nowhere else in the output, an
+un-adopted document's source still ships inside the vendored baseline.
+
 ### Provenance
 
 Every block in a composed document is wrapped in a marker comment; overridden blocks gain
@@ -351,9 +431,11 @@ _extensions/isms/
   cli/
     isms.ts            # entry point for quarto run and used as pre-render hook: compose, write changed files, copy changed assets, prune stale ones
     lib/project.ts     # loadProject() — reads the manifest
+    lib/adoption.ts    # _isms.yml: which baseline documents this institution adopts
     lib/compose.ts     # per-document composition, override loading and validation
     lib/blocks.ts      # block grammar: parse and emit
     lib/deviations.ts  # the deviations register: anchor resolution and rendering
+_isms.yml              # which baseline documents this institution adopts (optional; absence = adopt all)
 _overrides/*.qmd       # institution-local overrides (tracked in version control)
 _overrides/**          # any other file here (not just under images/, at any depth) is an asset, mirrored into docs/ the same way
 docs/*.qmd             # composed output (generated, gitignored)
@@ -364,12 +446,12 @@ deviations.qmd         # the deviations register (generated, gitignored)
 ## Status and roadmap
 
 Working today: variables, the block grammar, all four override modes, front-matter overrides,
-override validation, provenance markers, asset mirroring, composed-output pruning, the deviations
-register.
+override validation, provenance markers, asset mirroring, composed-output pruning, un-adopting a
+whole baseline document, the deviations register.
 
 Not yet built:
 
-- **Validation of `approved-date`.** The attribute is free text, so `14/07/2026` and `2026-07-14`
-  can coexist in one register, unsortable.
+- **Validation of `approved-date`.** Free text in override attributes and in `_isms.yml` alike, so
+  `14/07/2026` and `2026-07-14` can coexist in one register, unsortable.
 - **Appending institution-only sections** outside the baseline block set.
 - **Manifest/source cross-validation** of the `blocks:` lists.

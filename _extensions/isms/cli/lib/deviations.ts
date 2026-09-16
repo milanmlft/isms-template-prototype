@@ -5,7 +5,9 @@
 // visible — and the only place a mode=delete appears at all, since a deleted block leaves
 // nothing in the composed document but an HTML comment.
 
+import { BLOCK_CLOSE_RE, BLOCK_OPEN_RE } from "./blocks.ts";
 import type { Block, OverrideMode, OverrideOp } from "./blocks.ts";
+import type { UnadoptedDoc } from "./adoption.ts";
 // Type-only, so that the compose.ts <-> deviations.ts edge is erased at compile and the
 // runtime module graph stays one-directional.
 import type { ComposedDoc } from "./compose.ts";
@@ -43,8 +45,6 @@ interface ComposedIndex {
   anchors: { line: number; id: string }[];
 }
 
-const BLOCK_OPEN_RE = /^<!-- isms:block id=(\S+)/;
-const BLOCK_CLOSE_RE = /^<!-- \/isms:block id=(\S+) -->$/;
 // An ATX heading carrying an explicit Pandoc id: `## Document Scope {#sec-scope}`.
 const HEADING_ANCHOR_RE = /^#{1,6}\s.*\{#([A-Za-z][\w:.-]*)[^}]*\}\s*$/;
 const MARKER_RE = /^<!-- \/?isms:[a-z]+\b.*-->$/;
@@ -203,19 +203,37 @@ export function collectDeviations(
  * exists to expose, so the CLI names each gap with a file:line the author can go and fix.
  */
 export function governanceWarnings(source: string, deviations: readonly Deviation[]): string[] {
-  const warnings: string[] = [];
-  for (const d of deviations) {
-    for (const [attr, value] of [
-      ["reason", d.reason],
-      ["approved-by", d.approvedBy],
-      ["approved-date", d.approvedDate],
-    ] as const) {
-      if (value === undefined || value.trim() === "") {
-        warnings.push(`${source}:${d.line}: override "${d.blockId}" has no ${attr}`);
-      }
+  return deviations.flatMap((d) => governanceGaps(`${source}:${d.line}`, `override "${d.blockId}"`, d));
+}
+
+export type GovernanceAttr = "reason" | "approved-by" | "approved-date";
+
+/**
+ * `<source>:<line>: <subject> has no <attr>` for each governance attribute left blank.
+ *
+ * Shared by block overrides and by `_isms.yml` un-adoptions, so that the two cannot drift into
+ * describing the same gap in different words. `attrs` differs between them: an un-adoption with
+ * no reason is a hard error at load time, so only the approval fields can ever reach here.
+ */
+export function governanceGaps(
+  source: string,
+  subject: string,
+  meta: { reason?: string; approvedBy?: string; approvedDate?: string },
+  attrs: readonly GovernanceAttr[] = ["reason", "approved-by", "approved-date"],
+): string[] {
+  const values: Record<GovernanceAttr, string | undefined> = {
+    "reason": meta.reason,
+    "approved-by": meta.approvedBy,
+    "approved-date": meta.approvedDate,
+  };
+  const gaps: string[] = [];
+  for (const attr of attrs) {
+    const value = values[attr];
+    if (value === undefined || value.trim() === "") {
+      gaps.push(`${source}: ${subject} has no ${attr}`);
     }
   }
-  return warnings;
+  return gaps;
 }
 
 /** How a mode reads to someone auditing the register, rather than to the parser. */
@@ -250,8 +268,22 @@ function href(path: string, anchor?: string): string {
   return path.replace(/\\/g, "/") + (anchor ? `#${anchor}` : "");
 }
 
+/** The shared slug rule for the register's own in-page anchors. */
+function anchorSlug(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+}
+
 function detailAnchor(ismsId: string, blockId: string): string {
-  return `dev-${ismsId}-${blockId}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return anchorSlug(`dev-${ismsId}-${blockId}`);
+}
+
+/**
+ * A namespace of its own, deliberately not `detailAnchor(id, "unadopted")`: a baseline document
+ * that one day contains a block literally named `unadopted` would otherwise collide with a real
+ * un-adoption entry. A distinct prefix makes that impossible by construction.
+ */
+export function unadoptedAnchor(ismsId: string): string {
+  return anchorSlug(`unadopted-${ismsId}`);
 }
 
 function quote(s: string): string {
@@ -285,6 +317,22 @@ function rebaseAnchors(text: string, docPath: string): string {
   return text.replace(/\]\(#([A-Za-z][\w:.-]*)\)/g, (_, anchor) => `](${href(docPath, anchor)})`);
 }
 
+export interface RegisterInput {
+  banner: string;
+  baselineVersion: string;
+  /**
+   * Every document ID in `manifest.yml`, in manifest order — the Coverage roll-call.
+   *
+   * Passed in rather than derived: `docs` and `unadopted` are two ordered subsequences, and once
+   * a document in the middle is missing they cannot be re-interleaved without the parent order.
+   * Row-by-row correspondence with the manifest is the only thing that makes Coverage a roll-call
+   * rather than a subset.
+   */
+  manifestOrder: readonly string[];
+  docs: readonly ComposedDoc[];
+  unadopted: readonly UnadoptedDoc[];
+}
+
 /**
  * Render the register page.
  *
@@ -292,17 +340,25 @@ function rebaseAnchors(text: string, docPath: string): string {
  * a dead link, and "no deviations" is itself the evidence an auditor wants — a missing page only
  * says that nobody generated one.
  *
+ * EXACTLY ONE RETURN, at the end. Section emptiness is handled inside the section that is empty,
+ * never by returning from the function. An early return here silently drops every section below
+ * it — which is precisely how an un-adopted document would vanish from the one page whose job is
+ * to show it, in the very state (no block deviations, one document dropped) that is most likely.
+ *
  * Deliberately carries no generation timestamp. `writeAll` writes only when content differs, so
  * a clock value here means git churn and a changed Quarto input on every single render.
  * Provenance is the commit.
  */
-export function renderRegister(
-  banner: string,
-  baselineVersion: string,
-  docs: readonly ComposedDoc[],
-): string {
+export function renderRegister(input: RegisterInput): string {
+  const { banner, baselineVersion, manifestOrder, docs, unadopted } = input;
+
+  // `total` stays equal to the number of rows in the Register table: it is the number an auditor
+  // verifies by counting. An un-adoption is a different unit and gets its own sentence.
   const total = docs.reduce((n, d) => n + d.deviations.length, 0);
   const changed = docs.filter((d) => d.deviations.length > 0).length;
+  const composed = new Map(docs.map((d) => [d.ismsId, d]));
+  const declined = new Map(unadopted.map((u) => [u.ismsId, u]));
+  const plural = (n: number) => (n === 1 ? "" : "s");
 
   const out: string[] = [
     `---`,
@@ -311,71 +367,149 @@ export function renderRegister(
     ``,
     banner,
     ``,
-    `Every place where {{< var organisation >}} has changed the ISMS baseline (version ` +
-    `\`${baselineVersion}\`) is recorded here, with the reason given and the approval recorded at ` +
-    `the time. Anything not listed is baseline text, adopted unchanged.`,
+    `Every departure from the ISMS baseline (version \`${baselineVersion}\`) that ` +
+    `{{< var organisation >}} has made is recorded here, with the reason given and the approval ` +
+    `recorded at the time: whole documents not adopted, and individual blocks of text changed ` +
+    `inside the documents that were. [Coverage](#coverage) lists every document the baseline ` +
+    `ships, adopted or not; inside an adopted document, anything not listed here is baseline ` +
+    `text, adopted unchanged.`,
     ``,
-    `**${total} deviation${total === 1 ? "" : "s"}** across ${changed} of ${docs.length} ` +
-    `adopted document${docs.length === 1 ? "" : "s"}.`,
-    ``,
-    `## Coverage`,
-    ``,
-    `| Document | Deviations |`,
-    `|----------|------------|`,
   ];
 
-  for (const doc of docs) {
-    const n = doc.deviations.length;
-    out.push(`| [${flatten(doc.title)}](${href(doc.path)}) | ${n === 0 ? "Adopted verbatim" : n} |`);
-  }
-
-  out.push(``, `## Register`, ``);
-
-  if (total === 0) {
+  if (docs.length > 0) {
     out.push(
-      `::: {.callout-note}`,
-      `No deviations. Every adopted document is baseline text, unchanged.`,
-      `:::`,
+      `**${total} deviation${plural(total)}** across ${changed} of ${docs.length} ` +
+      `adopted document${plural(docs.length)}.`,
       ``,
     );
-    return out.join("\n") + "\n";
+  }
+  if (unadopted.length > 0) {
+    out.push(
+      docs.length === 0
+        ? `**None of the ${manifestOrder.length} documents in baseline version ` +
+        `\`${baselineVersion}\` is adopted.** Each is listed under ` +
+        `[Documents not adopted](#not-adopted) with the reason recorded against it.`
+        : `**${unadopted.length} of the ${manifestOrder.length} baseline documents ` +
+        `${unadopted.length === 1 ? "is" : "are"} not adopted.** See ` +
+        `[Documents not adopted](#not-adopted) for the reason recorded against ` +
+        `${unadopted.length === 1 ? "it" : "each"}.`,
+      ``,
+    );
   }
 
+  // Every section carries an explicit {#...} anchor: the verification pass accepts only explicit
+  // ones, so an in-page link is legal only if the id is emitted here rather than left to Quarto.
   out.push(
-    `| Document | Block | Change | Reason | Approved by | Approved | Source |`,
-    `|----------|-------|--------|--------|-------------|----------|--------|`,
+    `## Coverage {#coverage}`,
+    ``,
+    `| Document | Status |`,
+    `|----------|--------|`,
   );
-  for (const doc of docs) {
-    for (const d of doc.deviations) {
-      out.push("| " + [
-        `[${doc.ismsId}](${href(doc.path)})`,
-        `[\`${d.blockId}\`](${href(doc.path, d.anchor)})`,
-        `[${MODE_LABEL[d.mode]}](#${detailAnchor(doc.ismsId, d.blockId)})`,
-        cell(d.reason),
-        cell(d.approvedBy),
-        cell(d.approvedDate),
-        doc.overrideSource ? `\`${href(doc.overrideSource)}:${d.line}\`` : "",
-      ].join(" | ") + " |");
+
+  for (const id of manifestOrder) {
+    const doc = composed.get(id);
+    if (doc !== undefined) {
+      const n = doc.deviations.length;
+      const status = n === 0 ? "Adopted verbatim" : `${n} deviation${plural(n)}`;
+      out.push(`| [${flatten(doc.title)}](${href(doc.path)}) | ${status} |`);
+      continue;
     }
+    const gone = declined.get(id);
+    if (gone !== undefined) {
+      // Plain text, not a link. There is no composed document to point at, and the baseline
+      // source under `_extensions/` is not rendered by Quarto — a link to it would resolve on
+      // disk, pass a naive check, and 404 in the published site.
+      out.push(
+        `| ${flatten(`${gone.ismsId} — ${gone.title}`)} | ` +
+        `[Not adopted](#${unadoptedAnchor(gone.ismsId)}) |`,
+      );
+      continue;
+    }
+    throw new Error(
+      `manifest document ${id} was neither composed nor recorded as un-adopted; the register ` +
+      `cannot account for it, and an audit artefact that silently omits a baseline document is ` +
+      `the failure this page exists to prevent`,
+    );
   }
 
-  out.push(``, `## Detail`, ``);
-  for (const doc of docs) {
-    for (const d of doc.deviations) {
+  if (unadopted.length > 0) {
+    out.push(
+      ``,
+      `## Documents not adopted {#not-adopted}`,
+      ``,
+      `The baseline ships the documents below; {{< var organisation >}} has not adopted them. ` +
+      `They are not composed into this ISMS and their text appears nowhere in it, so this is the ` +
+      `only record that they exist and the only record of why they were left out.`,
+      ``,
+    );
+    for (const u of unadopted) {
       out.push(
-        `### ${doc.ismsId} · \`${d.blockId}\` {#${detailAnchor(doc.ismsId, d.blockId)}}`,
+        `### ${u.ismsId} · ${flatten(u.title)} {#${unadoptedAnchor(u.ismsId)}}`,
         ``,
-        `${MODE_LABEL[d.mode]} in [${flatten(doc.title)}](${href(doc.path, d.anchor)}) · ` +
-        `approved by ${cell(d.approvedBy)} on ${cell(d.approvedDate)}.`,
+        `Not adopted · approved by ${cell(u.approvedBy)} on ${cell(u.approvedDate)}.`,
         ``,
-        `**Reason:** ${cell(d.reason)}`,
-        ``,
-        d.mode === "delete" ? `**Baseline text removed:**` : `**Local text:**`,
-        ``,
-        quote(demoteHeadings(rebaseAnchors(d.text, doc.path))),
-        ``,
+        `**Reason:** ${cell(u.reason)}`,
+        ``
       );
     }
+    out.push(`## Register {#register}`, ``);
+  } else {
+    out.push(``, `## Register {#register}`, ``);
   }
+
+  if (total === 0) {
+    out.push(`::: {.callout-note}`);
+    if (docs.length === 0) {
+      out.push(`No deviations: this ISMS adopts no baseline document.`);
+    } else if (unadopted.length > 0) {
+      out.push(
+        `No deviations. Every adopted document is baseline text, unchanged. The documents this ` +
+        `ISMS does not adopt are listed under [Documents not adopted](#not-adopted).`,
+      );
+    } else {
+      out.push(`No deviations. Every adopted document is baseline text, unchanged.`);
+    }
+    out.push(`:::`, ``);
+  } else {
+    out.push(
+      `| Document | Block | Change | Reason | Approved by | Approved | Source |`,
+      `|----------|-------|--------|--------|-------------|----------|--------|`,
+    );
+    for (const doc of docs) {
+      for (const d of doc.deviations) {
+        out.push("| " + [
+          `[${doc.ismsId}](${href(doc.path)})`,
+          `[\`${d.blockId}\`](${href(doc.path, d.anchor)})`,
+          `[${MODE_LABEL[d.mode]}](#${detailAnchor(doc.ismsId, d.blockId)})`,
+          cell(d.reason),
+          cell(d.approvedBy),
+          cell(d.approvedDate),
+          doc.overrideSource ? `\`${href(doc.overrideSource)}:${d.line}\`` : "",
+        ].join(" | ") + " |");
+      }
+    }
+
+    // Only when there is something to detail: an empty `## Detail` heading with nothing beneath
+    // it reads as a page that failed to finish rendering.
+    out.push(``, `## Detail {#detail}`, ``);
+    for (const doc of docs) {
+      for (const d of doc.deviations) {
+        out.push(
+          `### ${doc.ismsId} · \`${d.blockId}\` {#${detailAnchor(doc.ismsId, d.blockId)}}`,
+          ``,
+          `${MODE_LABEL[d.mode]} in [${flatten(doc.title)}](${href(doc.path, d.anchor)}) · ` +
+          `approved by ${cell(d.approvedBy)} on ${cell(d.approvedDate)}.`,
+          ``,
+          `**Reason:** ${cell(d.reason)}`,
+          ``,
+          d.mode === "delete" ? `**Baseline text removed:**` : `**Local text:**`,
+          ``,
+          quote(demoteHeadings(rebaseAnchors(d.text, doc.path))),
+          ``,
+        );
+      }
+    }
+  }
+
   return out.join("\n") + "\n";
 }
