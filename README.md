@@ -38,7 +38,7 @@ _quarto.yml            # project config; `type: isms` pulls in the extension
 _variables.yml         # institution values: name, roles, environment, review periods
 index.qmd              # your ISMS landing page
 _overrides/            # institution-local policy changes, one file per document
-_extensions/isms/      # the vendored baseline (see below) — do not edit
+_extensions/milanmlft/isms/      # the vendored baseline (see below) — do not edit
 docs/                  # GENERATED composed documents — do not edit
 ```
 
@@ -47,7 +47,7 @@ Useful commands:
 ```shell
 quarto render                              # compose + build the site into _site/
 quarto preview                             # live-reloading dev server
-quarto run _extensions/isms/cli/isms.ts    # compose only, without rendering
+quarto run _extensions/milanmlft/isms/cli/isms.ts    # compose only, without rendering
 ```
 
 ## Versioning
@@ -209,8 +209,8 @@ progress.
 
 The effect is that the document is not composed: no page in `docs/`, no sidebar entry, no page in
 `_site/`, and any previously composed output is pruned on the next render. The baseline source stays
-in `_extensions/isms/`, because the extension is vendored whole — and assets it referenced are still
-mirrored into `docs/`, since mirroring is by path and not by reference.
+in `_extensions/milanmlft/isms/`, because the extension is vendored whole — and assets it referenced
+are still mirrored into `docs/`, since mirroring is by path and not by reference.
 
 **The un-adoption is published, not hidden.** The document keeps its row in the register's Coverage
 roll-call, marked `Not adopted`, and gains an entry under "Documents not adopted" carrying your
@@ -245,7 +245,7 @@ title so that retitling a baseline document does not orphan its overrides. **Abs
 case** — a document with no override file is adopted verbatim.
 
 Each override targets a named block of the baseline document. The overridable block IDs for each
-document are listed under `blocks:` in `_extensions/isms/manifest.yml`.
+document are listed under `blocks:` in `_extensions/milanmlft/isms/manifest.yml`.
 
 ```markdown
 ---
@@ -453,7 +453,7 @@ fix.
 ## Project layout
 
 ```
-_extensions/isms/
+_extensions/milanmlft/isms/
   _extension.yml       # Quarto contributions: project type, format, pre-render hook
   manifest.yml         # document registry + published block-ID surface
   docs/*.qmd           # authored baseline policy sources
