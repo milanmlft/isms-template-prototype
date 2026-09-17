@@ -109,7 +109,7 @@ function scanDelimiters(file: string, lines: string[], lineOffset: number): Deli
   let fence: { char: string; len: number } | null = null;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i].trim();
     const lineNo = i + lineOffset;
 
     // Fence tracking: opening/closing fence indented at most 3 spaces.
