@@ -16,3 +16,8 @@ _freeze/
 /.quarto/
 
 /.pi/
+
+# Raw source policy dropped in for ingestion. Kept out of version control so unreviewed
+# source material never lands in the repo; the tracked .gitkeep preserves the directory.
+/_ingest/input/*
+!/_ingest/input/.gitkeep
