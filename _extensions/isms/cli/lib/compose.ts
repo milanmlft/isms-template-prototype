@@ -29,7 +29,9 @@ export const COMPOSED_DIR = "docs";
  */
 export const OVERRIDES_DIR = "_overrides";
 
-const PREAMBLE_FILE = join(COMPOSED_DIR, "_preamble.qmd")
+// A LOGICAL path: it is a key in the `files` map (`docs/_preamble.qmd`). Built with posixJoin so
+// it is forward-slash on every platform; it re-joins onto `baseline.dir` for the real read fine.
+const PREAMBLE_FILE = posixJoin(COMPOSED_DIR, "_preamble.qmd")
 
 /**
  * Front-matter keys an institution may not set, and why each is refused.
@@ -85,10 +87,30 @@ export interface ComposeResult {
 }
 
 /**
- * Folds a path under the composed tree for collision comparison. 
+ * Join path segments with a forward slash, always — for LOGICAL paths only.
+ *
+ * The keys of the `files` and `assets` maps, the paths cited in the deviations register, and the
+ * paths embedded in error and warning messages are Quarto/site paths, not filesystem operations.
+ * stdlib `join` emits the platform separator, so on Windows it would write `docs\x.qmd` where every
+ * consumer — Quarto, the register's markdown links, the test assertions — expects `docs/x.qmd`.
+ * Real filesystem joins (onto `root` or `baseline.dir`) keep using stdlib `join`; Deno's `join`
+ * accepts a forward-slash argument, so a POSIX-style logical key re-joins for IO correctly.
+ */
+export function posixJoin(...segments: string[]): string {
+  return segments
+    .flatMap((s) => s.split(/[/\\]+/))
+    .filter((s) => s.length > 0)
+    .join("/");
+}
+
+/**
+ * Folds a path under the composed tree for collision comparison.
+ *
+ * Normalises separators to `/` as well as case and Unicode form, so a logical key and a
+ * platform-separator path (e.g. prune's `join(rel, name)` on Windows) fold to the same value.
  */
 export function foldPath(rel: string): string {
-  return rel.normalize("NFC").toLowerCase();
+  return rel.replace(/\\/g, "/").normalize("NFC").toLowerCase();
 }
 
 export async function compose(project: Project): Promise<ComposeResult> {
@@ -130,7 +152,8 @@ export async function compose(project: Project): Promise<ComposeResult> {
 
     const body = emit(parsed.root, ops, true);
     const composed = `---\n${stringifyYaml(meta, { sortKeys: true, lineWidth: 100 })}---\n\n${banner}\n${body}\n`;
-    const relPath = join(COMPOSED_DIR, `${spec.id}-${slug(spec.title)}.qmd`);
+    // LOGICAL: a `files` map key and ComposedDoc.path, cited as a markdown link in the register.
+    const relPath = posixJoin(COMPOSED_DIR, `${spec.id}-${slug(spec.title)}.qmd`);
     files.set(relPath, tidy(composed));
 
     // Anchors are resolved against `body`, before tidy() collapses blank lines and renumbers
@@ -230,7 +253,8 @@ export async function compose(project: Project): Promise<ComposeResult> {
  * ParseError because two positions are involved, as with the asset collisions above.
  */
 function assertNoOverrideFor(root: string, spec: DocumentSpec): void {
-  const rel = join(OVERRIDES_DIR, `${spec.id}.qmd`);
+  // LOGICAL: `rel` is quoted in the thrown message; the real stat re-joins it onto `root`.
+  const rel = posixJoin(OVERRIDES_DIR, `${spec.id}.qmd`);
   try {
     Deno.statSync(join(root, rel));
   } catch (err) {
@@ -339,7 +363,7 @@ function danglingLinkWarnings(
         const fix = block === undefined
           ? `The link is in baseline text outside any overridable block, so it cannot be ` +
           `changed locally — report it to the baseline maintainers.`
-          : `Override block "${block}" in ${join(OVERRIDES_DIR, `${doc.ismsId}.qmd`)} to remove ` +
+          : `Override block "${block}" in ${posixJoin(OVERRIDES_DIR, `${doc.ismsId}.qmd`)} to remove ` +
           `or redirect the link.`;
         warnings.push(
           `${doc.path}:${i + 1}: links to ${hit.ismsId} ("${href}"), which ` +
@@ -361,11 +385,14 @@ function walkAssets(dir: string, origin: Asset["origin"]): { assets: Map<string,
   const warnings: string[] = [];
   for (const entry of walkSync(dir, { includeDirs: false, followSymlinks: false, skip: [/\.qmd$/i] })) {
     const relFromRoot = relative(dir, entry.path);
-    const rel = join(COMPOSED_DIR, relFromRoot);
+    // LOGICAL asset key and message path. `relFromRoot` carries the platform separator (backslash
+    // on Windows); posixJoin splits on both separators so the key is forward-slash everywhere.
+    const rel = posixJoin(COMPOSED_DIR, relFromRoot);
     if (entry.isSymlink) {
       warnings.push(`${origin} asset ${rel} is a symlink and was not copied`);
       continue;
     }
+    // Split the REAL relative path on the platform separator to test each segment for a dotfile.
     if (relFromRoot.split(SEPARATOR).some((segment: any) => segment.startsWith("."))) {
       warnings.push(`${origin} asset ${rel} is a dotfile, or inside one, and was not copied`);
       continue;
@@ -411,7 +438,9 @@ function loadOverrides(
   // The relative path is what the deviations register cites; an absolute one would leak the
   // composing machine's filesystem into a rendered audit page. Errors keep the absolute path,
   // where a full path is what you want in a terminal.
-  const rel = join(OVERRIDES_DIR, `${spec.id}.qmd`);
+  // LOGICAL: `rel` is returned as ComposedDoc.overrideSource, which the register cites as a
+  // markdown link, and is quoted in the front-matter-key warning. The real read uses `path`.
+  const rel = posixJoin(OVERRIDES_DIR, `${spec.id}.qmd`);
   const path = join(root, rel);
   let src: string;
   try {

@@ -5,7 +5,7 @@ import { dirname, join } from "stdlib/path";
 import { ensureDirSync } from "stdlib/fs";
 import { equals } from "stdlib/bytes";
 import { loadProject } from "./lib/project.ts"
-import { type Asset, compose, COMPOSED_DIR, foldPath } from "./lib/compose.ts";
+import { type Asset, compose, COMPOSED_DIR, foldPath, posixJoin } from "./lib/compose.ts";
 import { DEVIATIONS_PATH } from "./lib/deviations.ts";
 import { ISMS_CONFIG_PATH } from "./lib/adoption.ts";
 
@@ -54,7 +54,9 @@ function prune(root: string, keep: Set<string>): string[] {
   const sweep = (rel: string): boolean => {
     let empty = true;
     for (const e of [...Deno.readDirSync(join(root, rel))]) {
-      const childRel = join(rel, e.name);
+      // LOGICAL: compared (folded) against the forward-slash `keep` keys and printed in `removed`.
+      // Deno's `join(root, childRel)` accepts a forward-slash arg, so real removal still works.
+      const childRel = posixJoin(rel, e.name);
       if (e.isDirectory) {
         if (!sweep(childRel)) { empty = false; continue; }
         Deno.removeSync(join(root, childRel));
