@@ -58,6 +58,12 @@ interface Delimiter {
 
 /** Split leading YAML front matter from the body. */
 function splitFrontMatter(src: string): { frontMatter: string; body: string; bodyStartLine: number } {
+  // Normalise CRLF (and lone CR) to LF at the one point every document enters the parser, so a
+  // source checked out with Windows line endings parses identically to a Unix one. The scan
+  // downstream splits on "\n" and anchors delimiters at column 0; a trailing "\r" left on each
+  // line otherwise defeats the column-0 match and reports every delimiter as un-anchored. Done
+  // before the split so all line-number arithmetic below is unaffected.
+  src = src.replace(/\r\n?/g, "\n");
   const lines = src.split("\n");
   if (lines[0]?.trim() !== "---") return { frontMatter: "", body: src, bodyStartLine: 1 };
   for (let i = 1; i < lines.length; i++) {

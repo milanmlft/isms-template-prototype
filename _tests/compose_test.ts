@@ -116,7 +116,10 @@ Deno.test("a document: key naming another document is refused, naming both ids",
     overrides: { ISMS01: '---\ntitle: "Local"\ndocument: 42\n---\n' },
   });
   const err1 = await assertRejectsWith(() => composeIn(root1), "document", "ISMS01");
-  assertContains(err1.message, "_overrides/ISMS01.qmd:3:");
+  // Separator-normalised: the error carries the absolute source path (deliberately, for terminal
+  // use), so on Windows the fragment is `\_overrides\ISMS01.qmd`. Fold to `/` before matching so
+  // the assertion pins the citation without being platform-dependent.
+  assertContains(err1.message.replace(/\\/g, "/"), "_overrides/ISMS01.qmd:3:");
 
   // document: key naming another document
   const root2 = project({
@@ -124,7 +127,7 @@ Deno.test("a document: key naming another document is refused, naming both ids",
     overrides: { ISMS01: '---\ntitle: "Local"\ndocument: ISMS02\n---\n' },
   });
   const err2 = await assertRejectsWith(() => composeIn(root2), "ISMS02", "ISMS01");
-  assertContains(err2.message, "_overrides/ISMS01.qmd:3:");
+  assertContains(err2.message.replace(/\\/g, "/"), "_overrides/ISMS01.qmd:3:");
 });
 
 //
@@ -326,7 +329,26 @@ Deno.test("a hidden path segment anywhere in an asset's path excludes it, not ju
   assertContains(warnings, "docs/images/.DS_Store");
 });
 
-Deno.test("a symlinked asset is not copied", async () => {
+// Windows refuses symlink creation without elevation or Developer Mode (os error 1314). The
+// behaviour under test is the CLI's, not the OS's, so the test is IGNORED where the fixture cannot
+// be built rather than reported as a false failure. Probed once here; CI (Linux) and macOS run it.
+const SYMLINKS_UNSUPPORTED = (() => {
+  const dir = Deno.makeTempDirSync({ prefix: "isms-symlink-probe-" });
+  try {
+    Deno.writeTextFileSync(join(dir, "target"), "x");
+    Deno.symlinkSync(join(dir, "target"), join(dir, "link"));
+    return false;
+  } catch {
+    return true;
+  } finally {
+    Deno.removeSync(dir, { recursive: true });
+  }
+})();
+
+Deno.test({
+  name: "a symlinked asset is not copied",
+  ignore: SYMLINKS_UNSUPPORTED,
+  fn: async () => {
   const root = project({
     docs: { ISMS01: SCOPE_BLOCK },
     assets: { "_extensions/isms/docs/images/ok.png": new Uint8Array([1, 2, 3]) },
@@ -339,6 +361,7 @@ Deno.test("a symlinked asset is not copied", async () => {
   assertEquals(result.assets.has("docs/images/ok.png"), true);
   assertEquals(result.assets.has("docs/images/link.png"), false);
   assertContains(result.warnings.join("\n"), "docs/images/link.png");
+  },
 });
 
 Deno.test("an institution's own asset is mirrored to the same position under docs/", async () => {
