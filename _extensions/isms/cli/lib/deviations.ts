@@ -64,7 +64,7 @@ const MARKER_RE = /^<!-- \/?isms:[a-z]+\b.*-->$/;
 function indexComposed(body: string): ComposedIndex {
   const ranges = new Map<string, { start: number; end: number }>();
   const anchors: { line: number; id: string }[] = [];
-  const lines = body.split("\n");
+  const lines = body.split(/\r?\n/);
   let fence: { char: string; len: number } | null = null;
 
   for (let i = 0; i < lines.length; i++) {
@@ -147,12 +147,12 @@ function anchorFor(blockId: string, index: ComposedIndex): string | undefined {
 
 /** Drop the isms marker comments from a raw block body. */
 function stripMarkers(s: string): string {
-  return s.split("\n").filter((l) => !MARKER_RE.test(l)).join("\n");
+  return s.split(/\r?\n/).filter((l) => !MARKER_RE.test(l)).join("\n");
 }
 
 /** Strip blank leading/trailing lines and the common indentation. */
 function dedent(s: string): string {
-  const lines = s.replace(/\r\n/g, "\n").split("\n");
+  const lines = s.split(/\r?\n/);
   while (lines.length && lines[0].trim() === "") lines.shift();
   while (lines.length && lines[lines.length - 1].trim() === "") lines.pop();
   const indents = lines.filter((l) => l.trim() !== "").map((l) => l.match(/^ */)![0].length);
@@ -287,7 +287,7 @@ export function unadoptedAnchor(ismsId: string): string {
 }
 
 function quote(s: string): string {
-  return s.split("\n").map((l) => (l.trim() === "" ? ">" : `> ${l}`)).join("\n");
+  return s.split(/\r?\n/).map((l) => (l.trim() === "" ? ">" : `> ${l}`)).join("\n");
 }
 
 /**

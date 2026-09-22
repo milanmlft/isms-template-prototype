@@ -277,7 +277,7 @@ function danglingLinkWarnings(
   for (const doc of docs) {
     const content = files.get(doc.path);
     if (content === undefined) continue;
-    const lines = content.split("\n");
+    const lines = content.split(/\r?\n/);
     let fence: { char: string; len: number } | null = null;
     const open: string[] = [];
 
@@ -568,7 +568,7 @@ function normaliseDates(value: unknown): unknown {
  * than at the top of the file. Falls back to line 1 when the key came from flow-style YAML.
  */
 function metaLine(frontMatter: string, key: string): number {
-  const at = frontMatter.split("\n").findIndex((line) =>
+  const at = frontMatter.split(/\r?\n/).findIndex((line) =>
     line.startsWith(key) && /^\s*:/.test(line.slice(key.length))
   );
   // Front matter opens on line 1 with `---`, so its own first line is the file's second.
