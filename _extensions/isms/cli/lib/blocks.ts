@@ -58,7 +58,7 @@ interface Delimiter {
 
 /** Split leading YAML front matter from the body. */
 function splitFrontMatter(src: string): { frontMatter: string; body: string; bodyStartLine: number } {
-  const lines = src.split("\n");
+  const lines = src.split(/\r?\n/);
   if (lines[0]?.trim() !== "---") return { frontMatter: "", body: src, bodyStartLine: 1 };
   for (let i = 1; i < lines.length; i++) {
     const t = lines[i].trim();
@@ -178,7 +178,7 @@ function scanDelimiters(file: string, lines: string[], lineOffset: number): Deli
 /** Parse a baseline document into a block tree. */
 export function parseDocument(file: string, src: string): ParsedDoc {
   const { frontMatter, body, bodyStartLine } = splitFrontMatter(src);
-  const lines = body.split("\n");
+  const lines = body.split(/\r?\n/);
   const delims = scanDelimiters(file, lines, bodyStartLine);
 
   const blocks = new Map<string, Block>();
@@ -275,7 +275,7 @@ export interface OverrideOp {
  */
 export function parseOverrides(file: string, src: string): { frontMatter: string; ops: Map<string, OverrideOp> } {
   const { frontMatter, body, bodyStartLine } = splitFrontMatter(src);
-  const lines = body.split("\n");
+  const lines = body.split(/\r?\n/);
   const delims = scanDelimiters(file, lines, bodyStartLine);
   const ops = new Map<string, OverrideOp>();
 
@@ -317,7 +317,7 @@ export function parseOverrides(file: string, src: string): { frontMatter: string
 }
 
 function trimBlankLines(s: string): string {
-  const lines = s.replace(/\r\n/g, "\n").split("\n");
+  const lines = s.split(/\r?\n/);
   while (lines.length && lines[0].trim() === "") lines.shift();
   while (lines.length && lines[lines.length - 1].trim() === "") lines.pop();
   return lines.join("\n");

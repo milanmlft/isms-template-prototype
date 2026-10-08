@@ -48,7 +48,7 @@ Deno.test("a delimiter carrying a token that is not an attribute is refused, quo
     "??",
     "key=value",
   );
-  
+
   // Attribute without `=` sign is also refused, as a bare token.
   assertThrowsWith(
     () =>
@@ -78,7 +78,7 @@ Deno.test("nothing may follow the closing `-->` on a delimiter line", () => {
     () => parseDocument("mem://x.qmd", "<!-- isms:begin id=x --> trailing\nb\n<!-- isms:end id=x -->"),
     "-->",
   );
-  
+
   // A delimiter without closing `-->` before EOF is also an unterminated error.
   assertThrowsWith(
     () => parseDocument("mem://x.qmd", "<!-- isms:begin id=x\nstill going\n"),
@@ -164,14 +164,14 @@ Deno.test("isms:end that does not close the open block is refused, naming both i
   // either delimiter in an editor.
   assertContains(err.message, "mem://x.qmd:6");
   assertContains(err.message, "line 4");
-  
+
   // isms:end with no block open at all.
   assertThrowsWith(
     () => parseDocument("mem://x.qmd", "prose\n<!-- isms:end id=a -->\n"),
     "a",
     "isms:begin",
   );
-  
+
   // isms:end in an override file with a different id than the open isms:override.
   assertThrowsWith(
     () => parseOverrides("mem://o.qmd", "<!-- isms:override id=a -->\nlocal\n<!-- isms:end id=b -->"),
@@ -228,7 +228,7 @@ Deno.test("two overrides for the same block in one file are refused", () => {
       parseOverrides(
         "mem://o.qmd",
         "<!-- isms:override id=x -->\none\n<!-- isms:end id=x -->\n" +
-          "<!-- isms:override id=x -->\ntwo\n<!-- isms:end id=x -->",
+        "<!-- isms:override id=x -->\ntwo\n<!-- isms:end id=x -->",
       ),
     "duplicate",
     '"x"',
@@ -257,6 +257,37 @@ Deno.test("text outside any block survives emit verbatim and is not overridable"
   assertContains(out, "outro prose");
   assertContains(out, "local");
   assertMissing(out, "\nin\n");
+});
+
+Deno.test("CRLF line endings parse identically to LF, so a Windows checkout is not a different document", () => {
+  // The parser splits on "\n" and anchors delimiters at column 0; a trailing "\r" left by CRLF
+  // endings would defeat that match and report every delimiter as un-anchored. Normalisation at
+  // the front-matter split makes the two byte-for-byte-different inputs one parse.
+  const lf =
+    "---\ntitle: x\n---\n" +
+    "<!-- isms:begin id=scope -->\nbody line\n<!-- isms:begin id=scope.inner -->\nnested\n" +
+    "<!-- isms:end id=scope.inner -->\n<!-- isms:end id=scope -->\n";
+  const crlf = lf.replace(/\n/g, "\r\n");
+
+  const docLf = parseDocument("mem://x.qmd", lf);
+  const docCrlf = parseDocument("mem://x.qmd", crlf);
+
+  // Same block tree, same ids.
+  assertEquals([...docCrlf.blocks.keys()], [...docLf.blocks.keys()]);
+  // The retained inner text carries no stray carriage returns.
+  assertMissing(docCrlf.blocks.get("scope")!.innerRaw, "\r");
+  // And composition produces the same output from either source.
+  assertEquals(emit(docCrlf.root, new Map(), true), emit(docLf.root, new Map(), true));
+});
+
+Deno.test("an override file with CRLF endings parses identically to LF", () => {
+  const lf = "---\ndocument: ISMS03\n---\n<!-- isms:override id=x mode=replace -->\nlocal\n<!-- isms:end id=x -->\n";
+  const crlf = lf.replace(/\n/g, "\r\n");
+  const a = parseOverrides("mem://o.qmd", lf);
+  const b = parseOverrides("mem://o.qmd", crlf);
+  assertEquals([...b.ops.keys()], [...a.ops.keys()]);
+  assertEquals(b.ops.get("x")!.text, a.ops.get("x")!.text);
+  assertMissing(b.ops.get("x")!.text, "\r");
 });
 
 Deno.test("a delimiter inside a fenced code block is not a delimiter", () => {

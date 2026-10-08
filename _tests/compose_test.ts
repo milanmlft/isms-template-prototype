@@ -116,7 +116,9 @@ Deno.test("a document: key naming another document is refused, naming both ids",
     overrides: { ISMS01: '---\ntitle: "Local"\ndocument: 42\n---\n' },
   });
   const err1 = await assertRejectsWith(() => composeIn(root1), "document", "ISMS01");
-  assertContains(err1.message, "_overrides/ISMS01.qmd:3:");
+  // Errors cite the absolute path (native separators on Windows), so pin the segments, not a joined path.
+  assertContains(err1.message, "_overrides");
+  assertContains(err1.message, "ISMS01.qmd:3:");
 
   // document: key naming another document
   const root2 = project({
@@ -124,7 +126,8 @@ Deno.test("a document: key naming another document is refused, naming both ids",
     overrides: { ISMS01: '---\ntitle: "Local"\ndocument: ISMS02\n---\n' },
   });
   const err2 = await assertRejectsWith(() => composeIn(root2), "ISMS02", "ISMS01");
-  assertContains(err2.message, "_overrides/ISMS01.qmd:3:");
+  assertContains(err2.message, "_overrides");
+  assertContains(err2.message, "ISMS01.qmd:3:");
 });
 
 //
