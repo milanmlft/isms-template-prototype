@@ -54,7 +54,9 @@ function prune(root: string, keep: Set<string>): string[] {
   const sweep = (rel: string): boolean => {
     let empty = true;
     for (const e of [...Deno.readDirSync(join(root, rel))]) {
-      const childRel = join(rel, e.name);
+      // `keep` holds composition's logical (forward-slash) paths, so the sweep builds the same;
+      // join() here would compare `docs\x` against `docs/x` on Windows and prune everything.
+      const childRel = `${rel}/${e.name}`;
       if (e.isDirectory) {
         if (!sweep(childRel)) { empty = false; continue; }
         Deno.removeSync(join(root, childRel));

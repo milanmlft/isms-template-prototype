@@ -29,7 +29,8 @@ export const COMPOSED_DIR = "docs";
  */
 export const OVERRIDES_DIR = "_overrides";
 
-const PREAMBLE_FILE = join(COMPOSED_DIR, "_preamble.qmd")
+// Logical paths (map keys, citations, links) are forward-slash on every OS; join() yields `\` on Windows.
+const PREAMBLE_FILE = `${COMPOSED_DIR}/_preamble.qmd`
 
 /**
  * Front-matter keys an institution may not set, and why each is refused.
@@ -130,7 +131,7 @@ export async function compose(project: Project): Promise<ComposeResult> {
 
     const body = emit(parsed.root, ops, true);
     const composed = `---\n${stringifyYaml(meta, { sortKeys: true, lineWidth: 100 })}---\n\n${banner}\n${body}\n`;
-    const relPath = join(COMPOSED_DIR, `${spec.id}-${slug(spec.title)}.qmd`);
+    const relPath = `${COMPOSED_DIR}/${spec.id}-${slug(spec.title)}.qmd`;
     files.set(relPath, tidy(composed));
 
     // Anchors are resolved against `body`, before tidy() collapses blank lines and renumbers
@@ -230,7 +231,7 @@ export async function compose(project: Project): Promise<ComposeResult> {
  * ParseError because two positions are involved, as with the asset collisions above.
  */
 function assertNoOverrideFor(root: string, spec: DocumentSpec): void {
-  const rel = join(OVERRIDES_DIR, `${spec.id}.qmd`);
+  const rel = `${OVERRIDES_DIR}/${spec.id}.qmd`;
   try {
     Deno.statSync(join(root, rel));
   } catch (err) {
@@ -339,7 +340,7 @@ function danglingLinkWarnings(
         const fix = block === undefined
           ? `The link is in baseline text outside any overridable block, so it cannot be ` +
           `changed locally — report it to the baseline maintainers.`
-          : `Override block "${block}" in ${join(OVERRIDES_DIR, `${doc.ismsId}.qmd`)} to remove ` +
+          : `Override block "${block}" in ${OVERRIDES_DIR}/${doc.ismsId}.qmd to remove ` +
           `or redirect the link.`;
         warnings.push(
           `${doc.path}:${i + 1}: links to ${hit.ismsId} ("${href}"), which ` +
@@ -361,7 +362,8 @@ function walkAssets(dir: string, origin: Asset["origin"]): { assets: Map<string,
   const warnings: string[] = [];
   for (const entry of walkSync(dir, { includeDirs: false, followSymlinks: false, skip: [/\.qmd$/i] })) {
     const relFromRoot = relative(dir, entry.path);
-    const rel = join(COMPOSED_DIR, relFromRoot);
+    // `relative()` is OS-native; the composed path is a logical key, so forward-slash it.
+    const rel = `${COMPOSED_DIR}/${relFromRoot.split(SEPARATOR).join("/")}`;
     if (entry.isSymlink) {
       warnings.push(`${origin} asset ${rel} is a symlink and was not copied`);
       continue;
@@ -411,7 +413,7 @@ function loadOverrides(
   // The relative path is what the deviations register cites; an absolute one would leak the
   // composing machine's filesystem into a rendered audit page. Errors keep the absolute path,
   // where a full path is what you want in a terminal.
-  const rel = join(OVERRIDES_DIR, `${spec.id}.qmd`);
+  const rel = `${OVERRIDES_DIR}/${spec.id}.qmd`;
   const path = join(root, rel);
   let src: string;
   try {
